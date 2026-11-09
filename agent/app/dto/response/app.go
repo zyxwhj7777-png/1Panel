@@ -31,6 +31,7 @@ type AppDTO struct {
 type AppItem struct {
 	Name                string   `json:"name"`
 	Key                 string   `json:"key"`
+	Icon                string   `json:"icon,omitempty"`
 	ID                  uint     `json:"id"`
 	Description         string   `json:"description"`
 	Status              string   `json:"status"`
@@ -50,19 +51,22 @@ type TagDTO struct {
 }
 
 type AppInstalledCheck struct {
-	IsExist       bool      `json:"isExist"`
-	Name          string    `json:"name"`
-	App           string    `json:"app"`
-	Version       string    `json:"version"`
-	Status        string    `json:"status"`
-	CreatedAt     time.Time `json:"createdAt"`
-	LastBackupAt  string    `json:"lastBackupAt"`
-	AppInstallID  uint      `json:"appInstallId"`
-	ContainerName string    `json:"containerName"`
-	InstallPath   string    `json:"installPath"`
-	HttpPort      int       `json:"httpPort"`
-	HttpsPort     int       `json:"httpsPort"`
-	WebsiteDir    string    `json:"websiteDir"`
+	TaskID                  string    `json:"taskID"`
+	ModelAccountBaseURLType string    `json:"modelAccountBaseURLType"`
+	ModelAccountBaseURL     string    `json:"modelAccountBaseURL"`
+	IsExist                 bool      `json:"isExist"`
+	Name                    string    `json:"name"`
+	App                     string    `json:"app"`
+	Version                 string    `json:"version"`
+	Status                  string    `json:"status"`
+	CreatedAt               time.Time `json:"createdAt"`
+	LastBackupAt            string    `json:"lastBackupAt"`
+	AppInstallID            uint      `json:"appInstallId"`
+	ContainerName           string    `json:"containerName"`
+	InstallPath             string    `json:"installPath"`
+	HttpPort                int       `json:"httpPort"`
+	HttpsPort               int       `json:"httpsPort"`
+	WebsiteDir              string    `json:"websiteDir"`
 }
 
 type AppDetailDTO struct {
@@ -104,6 +108,7 @@ type AppDetail struct {
 }
 
 type AppInstallDTO struct {
+	TaskID        string                 `json:"taskID"`
 	ID            uint                   `json:"id"`
 	Name          string                 `json:"name"`
 	AppID         uint                   `json:"appID"`
@@ -184,7 +189,15 @@ type AppParam struct {
 }
 
 type AppConfig struct {
-	Params     []AppParam `json:"params"`
-	RawCompose string     `json:"rawCompose"`
+	GPU                     *dto.ModelGPUConfig `json:"gpu,omitempty"`
+	AppKey                  string              `json:"appKey"`
+	Name                    string              `json:"name"`
+	HttpPort                int                 `json:"httpPort"`
+	SyncModelAccount        bool                `json:"syncModelAccount"`
+	ModelAccountBaseURLType string              `json:"modelAccountBaseURLType"`
+	ModelAccountBaseURL     string              `json:"modelAccountBaseURL"`
+	Params                  []AppParam          `json:"params"`
+	RawCompose              string              `json:"rawCompose"`
+	IsEdit                  bool                `json:"isEdit"`
 	request.AppContainerConfig
 }

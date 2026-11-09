@@ -10,7 +10,11 @@
                     {{ $t('database.addUserAuthorization') }}
                 </el-button>
             </div>
-            <el-table :data="authorizedUsers" :empty-text="$t('commons.msg.noneData')">
+            <el-table
+                :tooltip-options="TABLE_OVERFLOW_TOOLTIP_OPTIONS"
+                :data="authorizedUsers"
+                :empty-text="$t('commons.msg.noneData')"
+            >
                 <el-table-column :label="$t('commons.table.user')" show-overflow-tooltip min-width="180">
                     <template #default="{ row }">{{ row.username }}@{{ row.host }}</template>
                 </el-table-column>
@@ -131,6 +135,7 @@
                 </el-form-item>
                 <el-form-item :label="$t('commons.login.password')" prop="password" required>
                     <el-input type="password" clearable show-password v-model.trim="form.password" />
+                    <span class="input-help">{{ $t('commons.rule.illegalChar') }}</span>
                 </el-form-item>
                 <el-form-item :label="$t('database.permission')" prop="permission">
                     <el-select v-model="form.permission" @change="changePermission">
@@ -159,6 +164,7 @@
 </template>
 
 <script lang="ts" setup>
+import { TABLE_OVERFLOW_TOOLTIP_OPTIONS } from '@/components/table/shared';
 import { computed, reactive, ref } from 'vue';
 import { ElMessageBox } from 'element-plus';
 import Tooltip from '@/components/tooltip/index.vue';
@@ -214,7 +220,7 @@ const rules = reactive({
     username: [Rules.requiredInput, Rules.name],
     permission: [Rules.requiredSelect],
     host: [Rules.requiredInput, Rules.noSpace, Rules.illegal, { validator: checkMysqlHosts, trigger: 'blur' }],
-    password: [Rules.requiredInput, Rules.noSpace, Rules.illegal],
+    password: [Rules.requiredInput, Rules.databasePassword],
 });
 
 interface DialogProps {

@@ -83,6 +83,7 @@ type SettingBaseInfo struct {
 	ComplexityVerification string `json:"complexityVerification"`
 	NoAuthSetting          string `json:"noAuthSetting"`
 	ProxyType              string `json:"proxyType"`
+	ProxyEnabled           bool   `json:"proxyEnabled"`
 
 	ScriptSync string `json:"scriptSync"`
 
@@ -295,7 +296,6 @@ type LoginSetting struct {
 	IsDemo         bool   `json:"isDemo"`
 	IsIntl         bool   `json:"isIntl"`
 	IsOffline      bool   `json:"isOffline"`
-	IsFxplay       bool   `json:"isFxplay"`
 	IsEnterprise   bool   `json:"isEnterprise"`
 	Language       string `json:"language"`
 	MenuTabs       string `json:"menuTabs"`

@@ -17,6 +17,10 @@ const docTemplate = `{
 	},
 	"host": "",
 	"basePath": "/api/v2",
+	"schemes": [
+		"http",
+		"https"
+	],
 	"paths": {
 		"/ai/accounts": {
 			"post": {
@@ -47,7 +51,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Create model account",
+				"summary": "Create model service",
 				"tags": [
 					"AI"
 				]
@@ -74,7 +78,6 @@ const docTemplate = `{
 						"description": "OK",
 						"schema": {
 							"additionalProperties": {
-								"format": "int64",
 								"type": "integer"
 							},
 							"type": "object"
@@ -89,7 +92,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Count model accounts by provider",
+				"summary": "Count model services by provider",
 				"tags": [
 					"AI"
 				]
@@ -124,7 +127,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Delete model account",
+				"summary": "Delete model service",
 				"tags": [
 					"AI"
 				]
@@ -165,7 +168,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "List model account models",
+				"summary": "List model service models",
 				"tags": [
 					"AI"
 				]
@@ -200,7 +203,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Create model account model",
+				"summary": "Create model service model",
 				"tags": [
 					"AI"
 				]
@@ -235,7 +238,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Delete model account model",
+				"summary": "Delete model service model",
 				"tags": [
 					"AI"
 				]
@@ -311,7 +314,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Update model account model",
+				"summary": "Update model service model",
 				"tags": [
 					"AI"
 				]
@@ -338,7 +341,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Get model account providers",
+				"summary": "Get model service providers",
 				"tags": [
 					"AI"
 				]
@@ -376,7 +379,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Page model accounts",
+				"summary": "Page model services",
 				"tags": [
 					"AI"
 				]
@@ -411,7 +414,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Update model account",
+				"summary": "Update model service",
 				"tags": [
 					"AI"
 				]
@@ -446,7 +449,7 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Verify model account",
+				"summary": "Verify model service",
 				"tags": [
 					"AI"
 				]
@@ -1166,6 +1169,41 @@ const docTemplate = `{
 					}
 				],
 				"summary": "Get Agent Feishu channel config",
+				"tags": [
+					"AI"
+				]
+			}
+		},
+		"/ai/agents/channel/feishu/switch": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.AgentFeishuSwitchReq"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Switch to the bundled OpenClaw Feishu plugin",
 				"tags": [
 					"AI"
 				]
@@ -3299,6 +3337,843 @@ const docTemplate = `{
 				]
 			}
 		},
+		"/xpack/model/downloader/featured/search": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.FeaturedModelSearch"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.FeaturedModelPage"
+								},
+								{
+									"properties": {
+										"items": {
+											"items": {
+												"$ref": "#/definitions/dto.FeaturedModel"
+											},
+											"type": "array"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Page featured models",
+				"tags": [
+					"AI"
+				]
+			}
+		},
+		"/xpack/model/downloader/featured/sync": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Synchronizes the featured model catalog immediately, independently of the automatic synchronization setting. Does nothing in offline mode.",
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Synchronize featured models",
+				"tags": [
+					"AI"
+				]
+			}
+		},
+		"/xpack/model/downloader/featured/sync/status": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Set value to Enable or Disable. This updates the automatic synchronization setting without triggering an immediate synchronization.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloaderSyncSetting"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update featured model automatic synchronization",
+				"tags": [
+					"AI"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"value"
+					],
+					"formatEN": "update featured model automatic synchronization [value]",
+					"formatZH": "更新推荐模型自动同步 [value]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/xpack/model/downloader/hf/download": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Creates an asynchronous download task. Query /xpack/model/downloader/tasks/search for progress.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownload"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloadTaskItem"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Download Hugging Face model",
+				"tags": [
+					"AI"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"repoID",
+						"revision"
+					],
+					"formatEN": "download Hugging Face model [repoID]",
+					"formatZH": "下载 Hugging Face 模型 [repoID]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/xpack/model/downloader/hf/info": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelInfoReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.ModelInfo"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Get Hugging Face model details",
+				"tags": [
+					"AI"
+				]
+			}
+		},
+		"/xpack/model/downloader/hf/search": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelSearch"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.PageResult"
+								},
+								{
+									"properties": {
+										"items": {
+											"items": {
+												"$ref": "#/definitions/dto.ModelItem"
+											},
+											"type": "array"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Search Hugging Face models",
+				"tags": [
+					"AI"
+				]
+			}
+		},
+		"/xpack/model/downloader/local/delete": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.LocalModelDelete"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Delete locally downloaded model",
+				"tags": [
+					"AI"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name"
+					],
+					"formatEN": "delete local model [name]",
+					"formatZH": "删除本地模型 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/xpack/model/downloader/local/search": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.LocalModelSearch"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.PageResult"
+								},
+								{
+									"properties": {
+										"items": {
+											"items": {
+												"$ref": "#/definitions/dto.LocalModelItem"
+											},
+											"type": "array"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Page locally downloaded models",
+				"tags": [
+					"AI"
+				]
+			}
+		},
+		"/xpack/model/downloader/modelscope/download": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Creates an asynchronous download task. Query /xpack/model/downloader/tasks/search for progress.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownload"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloadTaskItem"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Download ModelScope model",
+				"tags": [
+					"AI"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"repoID",
+						"revision"
+					],
+					"formatEN": "download ModelScope model [repoID]",
+					"formatZH": "下载 ModelScope 模型 [repoID]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/xpack/model/downloader/modelscope/info": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelInfoReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.ModelInfo"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Get ModelScope model details",
+				"tags": [
+					"AI"
+				]
+			}
+		},
+		"/xpack/model/downloader/modelscope/search": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelSearch"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.PageResult"
+								},
+								{
+									"properties": {
+										"items": {
+											"items": {
+												"$ref": "#/definitions/dto.ModelItem"
+											},
+											"type": "array"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Search ModelScope models",
+				"tags": [
+					"AI"
+				]
+			}
+		},
+		"/xpack/model/downloader/settings": {
+			"get": {
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloaderSetting"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Get model downloader settings",
+				"tags": [
+					"AI"
+				]
+			},
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Updates the download directory, source endpoints and tokens. The featuredModelsSync field is ignored; use /xpack/model/downloader/featured/sync/status to update automatic synchronization.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloaderSetting"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update model downloader settings",
+				"tags": [
+					"AI"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"modelDir"
+					],
+					"formatEN": "update model downloader settings [modelDir]",
+					"formatZH": "更新模型下载设置 [modelDir]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/xpack/model/downloader/tasks/cancel": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Only waiting or downloading tasks can be canceled. The withFile field is ignored.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloadTaskOperate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Cancel model download task",
+				"tags": [
+					"AI"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "model_download_tasks",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "repo_id",
+							"output_value": "repoID"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "cancel model download task [repoID]",
+					"formatZH": "取消模型下载任务 [repoID]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/xpack/model/downloader/tasks/remove": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Waiting or downloading tasks cannot be removed. Set withFile to true to also delete downloaded files.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloadTaskOperate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Remove model download task",
+				"tags": [
+					"AI"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "model_download_tasks",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "repo_id",
+							"output_value": "repoID"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "remove model download task [repoID]",
+					"formatZH": "移除模型下载任务 [repoID]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/xpack/model/downloader/tasks/retry": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Only failed or canceled tasks can be retried. Returns the task while the download runs asynchronously.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloadTaskRetry"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloadTaskItem"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Retry model download task",
+				"tags": [
+					"AI"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "model_download_tasks",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "repo_id",
+							"output_value": "repoID"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "retry model download task [repoID]",
+					"formatZH": "重试模型下载任务 [repoID]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/xpack/model/downloader/tasks/search": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Set includeLocal to true to include locally downloaded models.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.ModelDownloadTaskSearch"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.PageResult"
+								},
+								{
+									"properties": {
+										"items": {
+											"items": {
+												"$ref": "#/definitions/dto.ModelDownloadTaskItem"
+											},
+											"type": "array"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Page model download tasks",
+				"tags": [
+					"AI"
+				]
+			}
+		},
 		"/ai/ollama/close": {
 			"post": {
 				"consumes": [
@@ -3560,253 +4435,6 @@ const docTemplate = `{
 				]
 			}
 		},
-		"/ai/ollama/model/sync": {
-			"post": {
-				"responses": {
-					"200": {
-						"description": "OK",
-						"schema": {
-							"items": {
-								"$ref": "#/definitions/dto.OllamaModelDropList"
-							},
-							"type": "array"
-						}
-					}
-				},
-				"security": [
-					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
-					}
-				],
-				"summary": "Sync Ollama model list",
-				"tags": [
-					"AI"
-				],
-				"x-panel-log": {
-					"BeforeFunctions": [],
-					"bodyKeys": [],
-					"formatEN": "sync Ollama model list",
-					"formatZH": "同步 Ollama 模型列表",
-					"paramKeys": []
-				}
-			}
-		},
-		"/ai/tensorrt/create": {
-			"post": {
-				"consumes": [
-					"application/json"
-				],
-				"parameters": [
-					{
-						"description": "request",
-						"in": "body",
-						"name": "request",
-						"required": true,
-						"schema": {
-							"$ref": "#/definitions/request.TensorRTLLMCreate"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
-					}
-				],
-				"summary": "Create TensorRT LLM",
-				"tags": [
-					"TensorRT LLM"
-				],
-				"x-panel-log": {
-					"BeforeFunctions": [],
-					"bodyKeys": [
-						"name"
-					],
-					"formatEN": "create TensorRT LLM [name]",
-					"formatZH": "创建 TensorRT LLM [name]",
-					"paramKeys": []
-				}
-			}
-		},
-		"/ai/tensorrt/delete": {
-			"post": {
-				"consumes": [
-					"application/json"
-				],
-				"parameters": [
-					{
-						"description": "request",
-						"in": "body",
-						"name": "request",
-						"required": true,
-						"schema": {
-							"$ref": "#/definitions/request.TensorRTLLMDelete"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
-					}
-				],
-				"summary": "Delete TensorRT LLM",
-				"tags": [
-					"TensorRT LLM"
-				],
-				"x-panel-log": {
-					"BeforeFunctions": [],
-					"bodyKeys": [
-						"id"
-					],
-					"formatEN": "delete TensorRT LLM [id]",
-					"formatZH": "删除 TensorRT LLM [id]",
-					"paramKeys": []
-				}
-			}
-		},
-		"/ai/tensorrt/operate": {
-			"post": {
-				"consumes": [
-					"application/json"
-				],
-				"parameters": [
-					{
-						"description": "request",
-						"in": "body",
-						"name": "request",
-						"required": true,
-						"schema": {
-							"$ref": "#/definitions/request.TensorRTLLMOperate"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
-					}
-				],
-				"summary": "Operate TensorRT LLM",
-				"tags": [
-					"TensorRT LLM"
-				],
-				"x-panel-log": {
-					"BeforeFunctions": [],
-					"bodyKeys": [
-						"id",
-						"operate"
-					],
-					"formatEN": "operate TensorRT LLM [id][operate]",
-					"formatZH": "操作 TensorRT LLM [id][operate]",
-					"paramKeys": []
-				}
-			}
-		},
-		"/ai/tensorrt/search": {
-			"post": {
-				"consumes": [
-					"application/json"
-				],
-				"parameters": [
-					{
-						"description": "request",
-						"in": "body",
-						"name": "request",
-						"required": true,
-						"schema": {
-							"$ref": "#/definitions/request.TensorRTLLMSearch"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
-					}
-				],
-				"summary": "Page TensorRT LLMs",
-				"tags": [
-					"TensorRT LLM"
-				]
-			}
-		},
-		"/ai/tensorrt/update": {
-			"post": {
-				"consumes": [
-					"application/json"
-				],
-				"parameters": [
-					{
-						"description": "request",
-						"in": "body",
-						"name": "request",
-						"required": true,
-						"schema": {
-							"$ref": "#/definitions/request.TensorRTLLMUpdate"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
-					}
-				],
-				"summary": "Update TensorRT LLM",
-				"tags": [
-					"TensorRT LLM"
-				],
-				"x-panel-log": {
-					"BeforeFunctions": [],
-					"bodyKeys": [
-						"id",
-						"name"
-					],
-					"formatEN": "update TensorRT LLM [id][name]",
-					"formatZH": "更新 TensorRT LLM [id][name]",
-					"paramKeys": []
-				}
-			}
-		},
 		"/alert": {
 			"post": {
 				"consumes": [
@@ -3906,11 +4534,11 @@ const docTemplate = `{
 					"Alert"
 				],
 				"x-panel-log": {
+					"BeforeFunctions": [],
 					"bodyKeys": [],
-					"paramKeys": [],
-					"formatZH": "删除告警配置 [name]",
 					"formatEN": "delete alert config [name]",
-					"BeforeFunctions": []
+					"formatZH": "删除告警配置 [name]",
+					"paramKeys": []
 				}
 			}
 		},
@@ -3968,6 +4596,50 @@ const docTemplate = `{
 				"tags": [
 					"Alert"
 				]
+			}
+		},
+		"/alert/config/status": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.AlertConfigStatusUpdate"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update alert config status",
+				"tags": [
+					"Alert"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"status"
+					],
+					"formatEN": "update alert config status [name][status]",
+					"formatZH": "更新告警配置状态 [name][status]",
+					"paramKeys": []
+				}
 			}
 		},
 		"/alert/config/test": {
@@ -4039,13 +4711,13 @@ const docTemplate = `{
 					"Alert"
 				],
 				"x-panel-log": {
+					"BeforeFunctions": [],
 					"bodyKeys": [
 						"displayName"
 					],
-					"paramKeys": [],
-					"formatZH": "更新告警配置 [displayName]",
 					"formatEN": "update alert config [displayName]",
-					"BeforeFunctions": []
+					"formatZH": "更新告警配置 [displayName]",
+					"paramKeys": []
 				}
 			}
 		},
@@ -4545,6 +5217,9 @@ const docTemplate = `{
 						"schema": {
 							"type": "file"
 						}
+					},
+					"302": {
+						"description": "redirect to the official icon URL"
 					}
 				},
 				"security": [
@@ -5341,6 +6016,17 @@ const docTemplate = `{
 			"post": {
 				"consumes": [
 					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/request.AppUpdateVersion"
+						}
+					}
 				],
 				"responses": {
 					"200": {
@@ -8032,6 +8718,14 @@ const docTemplate = `{
 		},
 		"/containers/list/stats": {
 			"get": {
+				"parameters": [
+					{
+						"description": "Comma-separated container IDs; omitted selects all containers",
+						"in": "query",
+						"name": "ids",
+						"type": "string"
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -8791,6 +9485,14 @@ const docTemplate = `{
 				"consumes": [
 					"application/json"
 				],
+				"parameters": [
+					{
+						"description": "Only count containers",
+						"in": "query",
+						"name": "containersOnly",
+						"type": "boolean"
+					}
+				],
 				"produces": [
 					"application/json"
 				],
@@ -9376,23 +10078,43 @@ const docTemplate = `{
 				"consumes": [
 					"application/json"
 				],
+				"description": "Requires a panel login session and CSRF token. API Key authentication is not supported. This replaces the current account's legacy secret; existing clients using the previous secret must be updated. Independent API keys are unaffected.",
+				"produces": [
+					"application/json"
+				],
 				"responses": {
 					"200": {
-						"description": "OK",
+						"description": "code=200 with the new secret; authentication and business errors use envelope code 400, 401 or 500",
+						"headers": {
+							"Cache-Control": {
+								"description": "no-store",
+								"type": "string"
+							}
+						},
 						"schema": {
-							"type": "string"
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.Response"
+								},
+								{
+									"properties": {
+										"data": {
+											"type": "string"
+										}
+									},
+									"type": "object"
+								}
+							]
 						}
 					}
 				},
 				"security": [
 					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
+						"CSRFToken": [],
+						"PanelSession": []
 					}
 				],
-				"summary": "generate api key",
+				"summary": "Generate or reset the legacy API key",
 				"tags": [
 					"Auth"
 				],
@@ -9405,11 +10127,562 @@ const docTemplate = `{
 				}
 			}
 		},
+		"/core/auth/api/keys/create": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Accepts a panel login session with CSRF protection, or a valid API Key signature. The new key belongs to the authenticated account.\nrequestID is optional. Omitted or empty values are generated by the server. For idempotent retries, supply a UUID and reuse it with the same payload.\nA successful first request returns the plaintext secret. Repeating the same requestID and payload returns alreadyCreated=true and an empty apiKey; changing the payload for that requestID is rejected.\nOmitted expiresAt defaults to 90 days; explicit null means no expiration. Omitted apiKeyValidityTime defaults to 120 minutes; zero disables timestamp validation.\nAPI-created keys may have a longer lifetime or broader IP policy than the calling key. Revoking the calling key does not revoke keys it created.\nAuthentication and business errors use HTTP 200 with envelope code 400, 401 or 500; check code rather than HTTP status alone. Unknown fields and bodies larger than 32 KiB are rejected.",
+				"parameters": [
+					{
+						"description": "Key policy and an optional UUID requestID for idempotency",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.APIKeyCreate"
+						}
+					},
+					{
+						"description": "Optional ID of the authenticating independent key; omit for legacy keys",
+						"in": "header",
+						"name": "1Panel-Key-ID",
+						"type": "string"
+					},
+					{
+						"description": "Signature algorithm; omission accepts either supported algorithm",
+						"enum": [
+							"v1",
+							"md5",
+							"hmac-sha256"
+						],
+						"in": "header",
+						"name": "1Panel-Signature-Version",
+						"type": "string"
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "code=200 on success; data is null on errors",
+						"headers": {
+							"Cache-Control": {
+								"description": "no-store",
+								"type": "string"
+							}
+						},
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.Response"
+								},
+								{
+									"properties": {
+										"data": {
+											"$ref": "#/definitions/dto.APIKeyCreated"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					},
+					"403": {
+						"description": "Invalid or missing CSRF token for a session request",
+						"schema": {
+							"$ref": "#/definitions/dto.Response"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": [],
+						"Timestamp": []
+					},
+					{
+						"CSRFToken": [],
+						"PanelSession": []
+					}
+				],
+				"summary": "Create an API key for the current account",
+				"tags": [
+					"API Key"
+				]
+			}
+		},
+		"/core/auth/api/keys/delete": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Accepts a panel login session with CSRF protection, or a valid API Key signature. Only keys owned by the authenticated account can be deleted; id=legacy is not supported.\nSubmit the current revision returned by search. Deletion immediately revokes the key, destroys its stored secret and removes it from lists. Audit and idempotency records are retained. Already-revoked keys can be deleted; deletion cannot be undone.\nA key can delete itself; subsequent requests signed with it fail. Authentication and business errors use HTTP 200 with envelope code 400, 401 or 500.",
+				"parameters": [
+					{
+						"description": "Independent key ID and current revision",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.APIKeyMutation"
+						}
+					},
+					{
+						"description": "Optional ID of the authenticating independent key; omit for legacy keys",
+						"in": "header",
+						"name": "1Panel-Key-ID",
+						"type": "string"
+					},
+					{
+						"description": "Signature algorithm; omission accepts either supported algorithm",
+						"enum": [
+							"v1",
+							"md5",
+							"hmac-sha256"
+						],
+						"in": "header",
+						"name": "1Panel-Signature-Version",
+						"type": "string"
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "code=200 on success; data is null on errors",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.Response"
+								},
+								{
+									"properties": {
+										"data": {
+											"$ref": "#/definitions/dto.APIKeyMutationResult"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					},
+					"403": {
+						"description": "Invalid or missing CSRF token for a session request",
+						"schema": {
+							"$ref": "#/definitions/dto.Response"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": [],
+						"Timestamp": []
+					},
+					{
+						"CSRFToken": [],
+						"PanelSession": []
+					}
+				],
+				"summary": "Delete an independent API key",
+				"tags": [
+					"API Key"
+				]
+			}
+		},
+		"/core/auth/api/keys/reveal": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Requires a panel login session and CSRF token. API Key authentication is not supported, including requests that also contain a valid session cookie; omit all 1Panel authentication headers.\nOnly the current account's independent keys can be revealed. Submit the current revision returned by search. Legacy, revoked and deleted keys are rejected; disabled or expired keys can still be revealed.\nSecret disclosure is audited. Authentication and business errors use HTTP 200 with envelope code 400, 401 or 500. The response must not be cached or logged.",
+				"parameters": [
+					{
+						"description": "Independent key ID and current revision",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.APIKeyMutation"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "code=200 on success; data is null on errors",
+						"headers": {
+							"Cache-Control": {
+								"description": "no-store",
+								"type": "string"
+							}
+						},
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.Response"
+								},
+								{
+									"properties": {
+										"data": {
+											"$ref": "#/definitions/dto.APIKeyRevealed"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					},
+					"403": {
+						"description": "Invalid or missing CSRF token",
+						"schema": {
+							"$ref": "#/definitions/dto.Response"
+						}
+					}
+				},
+				"security": [
+					{
+						"CSRFToken": [],
+						"PanelSession": []
+					}
+				],
+				"summary": "Reveal an independent API key's plaintext secret",
+				"tags": [
+					"API Key"
+				]
+			}
+		},
+		"/core/auth/api/keys/revoke": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Accepts a panel login session with CSRF protection, or a valid API Key signature. Only keys owned by the authenticated account can be revoked.\nSubmit the current revision returned by search. Revocation destroys the independent key's stored secret and cannot be undone; its metadata remains listed. For id=legacy, the legacy secret is cleared and API access is disabled.\nA key can revoke itself; subsequent requests signed with it fail. Keys previously created by the revoked key remain independent. Success increments the revision and closes associated terminal sessions.\nAuthentication and business errors use HTTP 200 with envelope code 400, 401 or 500.",
+				"parameters": [
+					{
+						"description": "Key ID and current revision",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.APIKeyMutation"
+						}
+					},
+					{
+						"description": "Optional ID of the authenticating independent key; omit for legacy keys",
+						"in": "header",
+						"name": "1Panel-Key-ID",
+						"type": "string"
+					},
+					{
+						"description": "Signature algorithm; omission accepts either supported algorithm",
+						"enum": [
+							"v1",
+							"md5",
+							"hmac-sha256"
+						],
+						"in": "header",
+						"name": "1Panel-Signature-Version",
+						"type": "string"
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "code=200 on success; data is null on errors",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.Response"
+								},
+								{
+									"properties": {
+										"data": {
+											"$ref": "#/definitions/dto.APIKeyMutationResult"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					},
+					"403": {
+						"description": "Invalid or missing CSRF token for a session request",
+						"schema": {
+							"$ref": "#/definitions/dto.Response"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": [],
+						"Timestamp": []
+					},
+					{
+						"CSRFToken": [],
+						"PanelSession": []
+					}
+				],
+				"summary": "Revoke an API key",
+				"tags": [
+					"API Key"
+				]
+			}
+		},
+		"/core/auth/api/keys/search": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Accepts a panel login session with CSRF protection, or a valid API Key signature. The authenticated account determines ownership; another account cannot be selected in the request.\nReturns key metadata and masked hints, never plaintext secrets. The legacy key is included when present; deleted keys are excluded.\nAuthentication and business errors use HTTP 200 with envelope code 400, 401 or 500; check code rather than HTTP status alone.",
+				"parameters": [
+					{
+						"description": "Pagination and revoked-key filter",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.APIKeySearch"
+						}
+					},
+					{
+						"description": "Optional ID of the authenticating independent key; omit for legacy keys",
+						"in": "header",
+						"name": "1Panel-Key-ID",
+						"type": "string"
+					},
+					{
+						"description": "Signature algorithm; omission accepts either supported algorithm",
+						"enum": [
+							"v1",
+							"md5",
+							"hmac-sha256"
+						],
+						"in": "header",
+						"name": "1Panel-Signature-Version",
+						"type": "string"
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "code=200 on success; data is null on errors",
+						"headers": {
+							"Cache-Control": {
+								"description": "no-store",
+								"type": "string"
+							}
+						},
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.Response"
+								},
+								{
+									"properties": {
+										"data": {
+											"$ref": "#/definitions/dto.APIKeyPage"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					},
+					"403": {
+						"description": "Invalid or missing CSRF token for a session request",
+						"schema": {
+							"$ref": "#/definitions/dto.Response"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": [],
+						"Timestamp": []
+					},
+					{
+						"CSRFToken": [],
+						"PanelSession": []
+					}
+				],
+				"summary": "List the current account's API keys",
+				"tags": [
+					"API Key"
+				]
+			}
+		},
+		"/core/auth/api/keys/status": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Accepts a panel login session with CSRF protection, or a valid API Key signature. Only keys owned by the authenticated account can be changed; id=legacy is supported.\nSubmit the current revision returned by search. Revoked or deleted keys cannot be enabled; expired keys must first receive a future expiration time. Disabling a key also closes its active terminal sessions.\nSuccess increments the revision; search again before another mutation. Authentication and business errors use HTTP 200 with envelope code 400, 401 or 500.",
+				"parameters": [
+					{
+						"description": "Key ID, current revision and Enable or Disable status",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.APIKeyStatus"
+						}
+					},
+					{
+						"description": "Optional ID of the authenticating independent key; omit for legacy keys",
+						"in": "header",
+						"name": "1Panel-Key-ID",
+						"type": "string"
+					},
+					{
+						"description": "Signature algorithm; omission accepts either supported algorithm",
+						"enum": [
+							"v1",
+							"md5",
+							"hmac-sha256"
+						],
+						"in": "header",
+						"name": "1Panel-Signature-Version",
+						"type": "string"
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "code=200 on success; data is null on errors",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.Response"
+								},
+								{
+									"properties": {
+										"data": {
+											"$ref": "#/definitions/dto.APIKeyMutationResult"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					},
+					"403": {
+						"description": "Invalid or missing CSRF token for a session request",
+						"schema": {
+							"$ref": "#/definitions/dto.Response"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": [],
+						"Timestamp": []
+					},
+					{
+						"CSRFToken": [],
+						"PanelSession": []
+					}
+				],
+				"summary": "Enable or disable an API key",
+				"tags": [
+					"API Key"
+				]
+			}
+		},
+		"/core/auth/api/keys/update": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Accepts a panel login session with CSRF protection, or a valid API Key signature. Only keys owned by the authenticated account can be changed.\nSubmit the current revision returned by search; stale revisions are rejected. This replaces editable policy fields without changing the secret. expiresAt must be supplied as an RFC 3339 timestamp or null.\nUse id=legacy for the legacy key; its name is fixed and expiresAt must be null. Revoked or deleted independent keys cannot be updated.\nSuccess increments the revision; search again before another mutation. Authentication and business errors use HTTP 200 with envelope code 400, 401 or 500.",
+				"parameters": [
+					{
+						"description": "Key ID, current revision and complete editable policy",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.APIKeyUpdate"
+						}
+					},
+					{
+						"description": "Optional ID of the authenticating independent key; omit for legacy keys",
+						"in": "header",
+						"name": "1Panel-Key-ID",
+						"type": "string"
+					},
+					{
+						"description": "Signature algorithm; omission accepts either supported algorithm",
+						"enum": [
+							"v1",
+							"md5",
+							"hmac-sha256"
+						],
+						"in": "header",
+						"name": "1Panel-Signature-Version",
+						"type": "string"
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "code=200 on success; data is null on errors",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.Response"
+								},
+								{
+									"properties": {
+										"data": {
+											"$ref": "#/definitions/dto.APIKeyMutationResult"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					},
+					"403": {
+						"description": "Invalid or missing CSRF token for a session request",
+						"schema": {
+							"$ref": "#/definitions/dto.Response"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": [],
+						"Timestamp": []
+					},
+					{
+						"CSRFToken": [],
+						"PanelSession": []
+					}
+				],
+				"summary": "Update an API key's policy",
+				"tags": [
+					"API Key"
+				]
+			}
+		},
 		"/core/auth/api/update": {
 			"post": {
 				"consumes": [
 					"application/json"
 				],
+				"description": "Requires a panel login session and CSRF token. API Key authentication is not supported. This updates only the current account's legacy API configuration.",
 				"parameters": [
 					{
 						"description": "request",
@@ -9421,20 +10694,24 @@ const docTemplate = `{
 						}
 					}
 				],
+				"produces": [
+					"application/json"
+				],
 				"responses": {
 					"200": {
-						"description": "OK"
+						"description": "code=200 on success; authentication and business errors use envelope code 400, 401 or 500",
+						"schema": {
+							"$ref": "#/definitions/dto.Response"
+						}
 					}
 				},
 				"security": [
 					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
+						"CSRFToken": [],
+						"PanelSession": []
 					}
 				],
-				"summary": "Update api config",
+				"summary": "Update the legacy API key configuration",
 				"tags": [
 					"Auth"
 				],
@@ -9925,27 +11202,6 @@ const docTemplate = `{
 					}
 				},
 				"summary": "Get Setting For Login",
-				"tags": [
-					"Auth"
-				]
-			}
-		},
-		"/core/auth/welcome": {
-			"get": {
-				"responses": {
-					"200": {
-						"description": "OK"
-					}
-				},
-				"security": [
-					{
-						"ApiKeyAuth": []
-					},
-					{
-						"Timestamp": []
-					}
-				],
-				"summary": "Get welcome page",
 				"tags": [
 					"Auth"
 				]
@@ -11283,6 +12539,47 @@ const docTemplate = `{
 					"formatZH": "修改系统监听信息 =\u003e ipv6: [ipv6], 监听 IP: [bindAddress]",
 					"paramKeys": []
 				}
+			}
+		},
+		"/core/settings/file/download": {
+			"get": {
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.FileDownloadPreference"
+						}
+					}
+				},
+				"summary": "Load current user's file download preference",
+				"tags": [
+					"System Setting"
+				]
+			},
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.FileDownloadPreference"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"summary": "Update current user's file download preference",
+				"tags": [
+					"System Setting"
+				]
 			}
 		},
 		"/core/settings/interface": {
@@ -12996,6 +14293,136 @@ const docTemplate = `{
 					"formatZH": "切换快速跳转",
 					"paramKeys": []
 				}
+			}
+		},
+		"/dashboard/quick/directory": {
+			"get": {
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/model.QuickDirectory"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List quick directories",
+				"tags": [
+					"Dashboard"
+				]
+			},
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.QuickDirectoryCreate"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Create quick directory",
+				"tags": [
+					"Dashboard"
+				]
+			}
+		},
+		"/dashboard/quick/directory/del": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.QuickDirectoryDelete"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Delete quick directory",
+				"tags": [
+					"Dashboard"
+				]
+			}
+		},
+		"/dashboard/quick/directory/update": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.QuickDirectoryUpdate"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update quick directory",
+				"tags": [
+					"Dashboard"
+				]
 			}
 		},
 		"/dashboard/quick/option": {
@@ -17970,6 +19397,53 @@ const docTemplate = `{
 				]
 			}
 		},
+		"/files/wget/process/remove": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/request.FileProcessRemoveReq"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/response.FileProcessKeys"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Remove finished download progress records without deleting files",
+				"tags": [
+					"File"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"keys"
+					],
+					"formatEN": "Remove finished download records [keys]",
+					"formatZH": "移除已结束下载记录 [keys]",
+					"paramKeys": []
+				}
+			}
+		},
 		"/files/wget/stop": {
 			"post": {
 				"consumes": [
@@ -19817,6 +21291,17 @@ const docTemplate = `{
 		},
 		"/hosts/monitor/clean": {
 			"post": {
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.MonitorClean"
+						}
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "OK"
@@ -19830,15 +21315,17 @@ const docTemplate = `{
 						"Timestamp": []
 					}
 				],
-				"summary": "Clean monitor data",
+				"summary": "Clean host or GPU monitor data",
 				"tags": [
 					"Monitor"
 				],
 				"x-panel-log": {
 					"BeforeFunctions": [],
-					"bodyKeys": [],
-					"formatEN": "clean monitor datas",
-					"formatZH": "清空监控数据",
+					"bodyKeys": [
+						"type"
+					],
+					"formatEN": "clean [type] monitoring data",
+					"formatZH": "清空 [type] 监控数据",
 					"paramKeys": []
 				}
 			}
@@ -20558,6 +22045,18 @@ const docTemplate = `{
 						"in": "query",
 						"name": "command",
 						"type": "string"
+					},
+					{
+						"description": "session id to reattach",
+						"in": "query",
+						"name": "session",
+						"type": "string"
+					},
+					{
+						"description": "allow recovery after an unexpected disconnect",
+						"in": "query",
+						"name": "terminalPersistent",
+						"type": "boolean"
 					}
 				],
 				"responses": {
@@ -20579,6 +22078,88 @@ const docTemplate = `{
 				]
 			}
 		},
+		"/hosts/terminal/sessions/close": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.TerminalSessionClose"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Close a terminal session",
+				"tags": [
+					"Terminal"
+				]
+			}
+		},
+		"/hosts/terminal/sessions/closeAll": {
+			"post": {
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"tags": [
+					"Terminal"
+				]
+			}
+		},
+		"/hosts/terminal/sessions/search": {
+			"post": {
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/terminal.Info"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List the caller's live terminal sessions",
+				"tags": [
+					"Terminal"
+				]
+			}
+		},
 		"/hosts/terminal/ssh": {
 			"get": {
 				"parameters": [
@@ -20593,6 +22174,24 @@ const docTemplate = `{
 						"in": "query",
 						"name": "command",
 						"type": "string"
+					},
+					{
+						"description": "session id to reattach",
+						"in": "query",
+						"name": "session",
+						"type": "string"
+					},
+					{
+						"description": "session title shown in the session list",
+						"in": "query",
+						"name": "title",
+						"type": "string"
+					},
+					{
+						"description": "allow recovery after an unexpected disconnect",
+						"in": "query",
+						"name": "terminalPersistent",
+						"type": "boolean"
 					}
 				],
 				"responses": {
@@ -21983,11 +23582,9 @@ const docTemplate = `{
 				],
 				"x-panel-log": {
 					"BeforeFunctions": [],
-					"bodyKeys": [
-						"id"
-					],
-					"formatEN": "Delete runtime [id]",
-					"formatZH": "删除运行环境 [id]",
+					"bodyKeys": [],
+					"formatEN": "Delete runtime [name]",
+					"formatZH": "删除运行环境 [name]",
 					"paramKeys": []
 				}
 			}
@@ -22182,12 +23779,21 @@ const docTemplate = `{
 					"Runtime"
 				],
 				"x-panel-log": {
-					"BeforeFunctions": [],
-					"bodyKeys": [
-						"id"
+					"BeforeFunctions": [
+						{
+							"db": "runtimes",
+							"input_column": "id",
+							"input_value": "ID",
+							"isList": false,
+							"output_column": "name",
+							"output_value": "name"
+						}
 					],
-					"formatEN": "Operate runtime [id]",
-					"formatZH": "操作运行环境 [id]",
+					"bodyKeys": [
+						"ID"
+					],
+					"formatEN": "Operate runtime [name]",
+					"formatZH": "操作运行环境 [name]",
 					"paramKeys": []
 				}
 			}
@@ -25490,6 +27096,1876 @@ const docTemplate = `{
 				}
 			}
 		},
+		"/vms": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Creates a VM from ISO images or a template. The target node allows 1 VM in Community, 5 in Professional, and unlimited VMs in Enterprise. All VM records count toward the quota, regardless of state; creation fails with ErrVMCountLimit when the quota is reached.\nReturns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMCreate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Create virtual machine",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name"
+					],
+					"formatEN": "create VM [name]",
+					"formatZH": "创建虚拟机 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/console": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMGraphics"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Load virtual machine console information",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/console/ws": {
+			"get": {
+				"description": "Upgrades the connection to WebSocket and forwards VNC traffic.",
+				"parameters": [
+					{
+						"description": "virtual machine name",
+						"in": "query",
+						"name": "name",
+						"required": true,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"101": {
+						"description": "Switching Protocols"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Connect virtual machine VNC console over WebSocket",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/del": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMDelete"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Delete virtual machine",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "virtual_machines",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "name",
+							"output_value": "name"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "delete VM [name]",
+					"formatZH": "删除虚拟机 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/disks/resize": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMDiskResize"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Expand virtual machine disk",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"target",
+						"sizeGiB"
+					],
+					"formatEN": "expand VM [name] disk [target] to [sizeGiB] GiB",
+					"formatZH": "扩容虚拟机 [name] 磁盘 [target] 至 [sizeGiB] GiB",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/environment": {
+			"get": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMEnvironment"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Check virtual machine environment",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/environment/enable": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Enable virtual machine environment",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [],
+					"formatEN": "enable VM runtime environment",
+					"formatZH": "启用虚拟机运行环境",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/health/check": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMHealthCheckResult"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Check virtual machine health",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/info": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMInfoReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMInfo"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Load virtual machine details",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/iso": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMIsoCreate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Create virtual machine ISO image record",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"type"
+					],
+					"formatEN": "create VM ISO [name] [type]",
+					"formatZH": "创建虚拟机镜像 [name] [type]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/iso/del": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMIsoDelete"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Delete virtual machine ISO image",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "vm_isos",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "name",
+							"output_value": "name"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "delete VM ISO [name]",
+					"formatZH": "删除虚拟机镜像 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/iso/import/start": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Creates an import record and returns its id.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMIsoImportStart"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"additionalProperties": {
+								"type": "integer"
+							},
+							"type": "object"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Start virtual machine ISO image import",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/iso/import/update": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMIsoImportUpdate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update virtual machine ISO image import status",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/iso/list": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMIsoInfo"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List virtual machine ISO images",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/iso/search": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.SearchPageWithType"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.PageResult"
+								},
+								{
+									"properties": {
+										"items": {
+											"items": {
+												"$ref": "#/definitions/dto.VMIsoInfo"
+											},
+											"type": "array"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Page virtual machine ISO images",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/iso/update": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMIsoUpdate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update virtual machine ISO image record",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"type"
+					],
+					"formatEN": "update VM ISO [name] [type]",
+					"formatZH": "更新虚拟机镜像 [name] [type]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/networks": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMNetworkCreate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Create virtual machine network",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"type"
+					],
+					"formatEN": "create VM network [name] [type]",
+					"formatZH": "创建虚拟机网络 [name] [type]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/networks/bridges": {
+			"get": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMNetworkBridgeItem"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List host network bridges for virtual machines",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/networks/del": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMResourceDelete"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Delete virtual machine network",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "vm_networks",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "name",
+							"output_value": "name"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "delete VM network [name]",
+					"formatZH": "删除虚拟机网络 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/networks/interfaces": {
+			"get": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMNetworkInterfaceItem"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List host network interfaces for virtual machines",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/networks/list": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMNetworkItem"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List virtual machine networks",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/networks/update": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMNetworkUpdate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update virtual machine network",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "vm_networks",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "name",
+							"output_value": "name"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "update VM network [name]",
+					"formatZH": "更新虚拟机网络 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/operate": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMOperate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Operate virtual machine",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"operate"
+					],
+					"formatEN": "operate VM [name] [operate]",
+					"formatZH": "操作虚拟机 [name] [operate]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/orphans/clean": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMOrphanClean"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMOrphanItem"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Clean orphaned virtual machine data",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [],
+					"formatEN": "clean VM orphaned data",
+					"formatZH": "清理虚拟机孤立数据",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/orphans/scan": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMOrphanItem"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Scan orphaned virtual machine data",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/rename": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMRename"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Rename virtual machine",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"newName"
+					],
+					"formatEN": "rename VM [name] to [newName]",
+					"formatZH": "重命名虚拟机 [name] 为 [newName]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/search": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns the VM list and the target node quota: 1 for Community, 5 for Professional, and 0 for unlimited Enterprise.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.SearchWithPage"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"allOf": [
+								{
+									"$ref": "#/definitions/dto.VMSearchResult"
+								},
+								{
+									"properties": {
+										"items": {
+											"items": {
+												"$ref": "#/definitions/dto.VMInfo"
+											},
+											"type": "array"
+										}
+									},
+									"type": "object"
+								}
+							]
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Page virtual machines",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/snapshots": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMSnapshotReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Create virtual machine snapshot",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"snapshotName"
+					],
+					"formatEN": "create VM [name] snapshot [snapshotName]",
+					"formatZH": "创建虚拟机 [name] 快照 [snapshotName]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/snapshots/del": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMSnapshotReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Delete virtual machine snapshot",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"snapshotName"
+					],
+					"formatEN": "delete VM [name] snapshot [snapshotName]",
+					"formatZH": "删除虚拟机 [name] 快照 [snapshotName]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/snapshots/list": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMSnapshotSearch"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMSnapshotInfo"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List virtual machine snapshots",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/snapshots/recover": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMSnapshotReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Recover virtual machine snapshot",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"snapshotName"
+					],
+					"formatEN": "recover VM [name] snapshot [snapshotName]",
+					"formatZH": "恢复虚拟机 [name] 快照 [snapshotName]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/stats": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMReq"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMStats"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Load virtual machine statistics",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/storages": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMStorageCreate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Create virtual machine storage pool",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"type"
+					],
+					"formatEN": "create VM storage [name] [type]",
+					"formatZH": "创建虚拟机存储 [name] [type]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/storages/del": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMResourceDelete"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Delete virtual machine storage pool",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "vm_storages",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "name",
+							"output_value": "name"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "delete VM storage [name]",
+					"formatZH": "删除虚拟机存储 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/storages/list": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMStorageItem"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List virtual machine storage pools",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/storages/update": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMStorageUpdate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update virtual machine storage pool",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "vm_storages",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "name",
+							"output_value": "name"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "update VM storage [name]",
+					"formatZH": "更新虚拟机存储 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/sync": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Sync virtual machines",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [],
+					"formatEN": "sync virtual machines",
+					"formatZH": "同步虚拟机",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/templates": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMTemplateCreate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Create virtual machine template",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name",
+						"templateName"
+					],
+					"formatEN": "create VM [name] template [templateName]",
+					"formatZH": "创建虚拟机 [name] 模板 [templateName]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/templates/del": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMTemplateDelete"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Delete virtual machine template",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [
+						{
+							"db": "vm_templates",
+							"input_column": "id",
+							"input_value": "id",
+							"isList": false,
+							"output_column": "name",
+							"output_value": "name"
+						}
+					],
+					"bodyKeys": [
+						"id"
+					],
+					"formatEN": "delete VM template [name]",
+					"formatZH": "删除虚拟机模板 [name]",
+					"paramKeys": []
+				}
+			}
+		},
+		"/vms/templates/list": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"items": {
+								"$ref": "#/definitions/dto.VMTemplateInfo"
+							},
+							"type": "array"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "List virtual machine templates",
+				"tags": [
+					"VirtualMachine"
+				]
+			}
+		},
+		"/vms/update": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"description": "Returns taskID for tracking the asynchronous operation.",
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/dto.VMUpdate"
+						}
+					}
+				],
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/dto.VMTaskResp"
+						}
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Update virtual machine",
+				"tags": [
+					"VirtualMachine"
+				],
+				"x-panel-log": {
+					"BeforeFunctions": [],
+					"bodyKeys": [
+						"name"
+					],
+					"formatEN": "update VM [name]",
+					"formatZH": "更新虚拟机 [name]",
+					"paramKeys": []
+				}
+			}
+		},
 		"/websites": {
 			"post": {
 				"consumes": [
@@ -26308,6 +29784,41 @@ const docTemplate = `{
 				}
 			}
 		},
+		"/websites/ca/import": {
+			"post": {
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"description": "request",
+						"in": "body",
+						"name": "request",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/request.WebsiteCAImport"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Import website CA from PEM or server files",
+				"tags": [
+					"Website CA"
+				]
+			}
+		},
 		"/websites/ca/obtain": {
 			"post": {
 				"consumes": [
@@ -26447,6 +29958,39 @@ const docTemplate = `{
 					}
 				],
 				"summary": "Page website ca",
+				"tags": [
+					"Website CA"
+				]
+			}
+		},
+		"/websites/ca/upload": {
+			"post": {
+				"consumes": [
+					"multipart/form-data"
+				],
+				"parameters": [
+					{
+						"description": "ZIP containing ca.crt and ca.key",
+						"in": "formData",
+						"name": "file",
+						"required": true,
+						"type": "file"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				},
+				"security": [
+					{
+						"ApiKeyAuth": []
+					},
+					{
+						"Timestamp": []
+					}
+				],
+				"summary": "Upload website CA archive",
 				"tags": [
 					"Website CA"
 				]
@@ -28072,14 +31616,14 @@ const docTemplate = `{
 						{
 							"db": "websites",
 							"input_column": "id",
-							"input_value": "websiteId",
+							"input_value": "websiteID",
 							"isList": false,
 							"output_column": "primary_domain",
 							"output_value": "domain"
 						}
 					],
 					"bodyKeys": [
-						"websiteId"
+						"websiteID"
 					],
 					"formatEN": "php version update [domain]",
 					"formatZH": "php 版本变更 [domain]",
@@ -30153,6 +33697,284 @@ const docTemplate = `{
 		}
 	},
 	"definitions": {
+		"dto.APIKeyCreate": {
+			"properties": {
+				"allowAppBinding": {
+					"default": false,
+					"type": "boolean"
+				},
+				"apiKeyValidityTime": {
+					"example": 120,
+					"maximum": 1440,
+					"minimum": 0,
+					"type": "integer"
+				},
+				"apiTrustedProxies": {
+					"example": "192.0.2.1",
+					"maxLength": 4096,
+					"type": "string"
+				},
+				"description": {
+					"example": "Used by the deployment service",
+					"maxLength": 256,
+					"type": "string"
+				},
+				"expiresAt": {
+					"example": "2030-01-01T00:00:00Z",
+					"format": "date-time",
+					"type": "string",
+					"x-nullable": true
+				},
+				"ipWhiteList": {
+					"example": "192.0.2.10",
+					"maxLength": 4096,
+					"type": "string"
+				},
+				"name": {
+					"example": "Deployment automation",
+					"maxLength": 64,
+					"minLength": 1,
+					"type": "string"
+				},
+				"requestID": {
+					"description": "Optional client-generated UUID for idempotent retries. Omitted or empty values are generated by the server.",
+					"example": "df1a75a3-5f56-4fa3-9e7a-a573a853d894",
+					"format": "uuid",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeyCreated": {
+			"properties": {
+				"alreadyCreated": {
+					"type": "boolean"
+				},
+				"apiKey": {
+					"type": "string"
+				},
+				"item": {
+					"$ref": "#/definitions/dto.APIKeyItem"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeyItem": {
+			"properties": {
+				"allowAppBinding": {
+					"example": false,
+					"type": "boolean"
+				},
+				"apiKeyValidityTime": {
+					"example": 120,
+					"type": "integer"
+				},
+				"apiTrustedProxies": {
+					"example": "192.0.2.1",
+					"type": "string"
+				},
+				"createdAt": {
+					"format": "date-time",
+					"type": "string",
+					"x-nullable": true
+				},
+				"description": {
+					"example": "Used by the deployment service",
+					"type": "string"
+				},
+				"expiresAt": {
+					"format": "date-time",
+					"type": "string",
+					"x-nullable": true
+				},
+				"id": {
+					"example": "8a8f0f77-1ec8-4d46-8f5a-0ea8807e2d8a",
+					"type": "string"
+				},
+				"ipWhiteList": {
+					"example": "192.0.2.10",
+					"type": "string"
+				},
+				"keyHint": {
+					"example": "abcd••••1234",
+					"type": "string"
+				},
+				"kind": {
+					"enum": [
+						"apiKey",
+						"legacy"
+					],
+					"example": "apiKey",
+					"type": "string"
+				},
+				"name": {
+					"example": "Deployment automation",
+					"type": "string"
+				},
+				"revision": {
+					"example": 1,
+					"minimum": 1,
+					"type": "integer"
+				},
+				"status": {
+					"enum": [
+						"Enable",
+						"Disable",
+						"Revoked",
+						"Expired"
+					],
+					"example": "Enable",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeyMutation": {
+			"properties": {
+				"id": {
+					"example": "8a8f0f77-1ec8-4d46-8f5a-0ea8807e2d8a",
+					"type": "string"
+				},
+				"revision": {
+					"example": 1,
+					"minimum": 1,
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeyMutationResult": {
+			"properties": {
+				"terminalClosePending": {
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeyPage": {
+			"properties": {
+				"items": {
+					"items": {
+						"$ref": "#/definitions/dto.APIKeyItem"
+					},
+					"type": "array"
+				},
+				"total": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeyRevealed": {
+			"properties": {
+				"apiKey": {
+					"type": "string"
+				},
+				"id": {
+					"example": "8a8f0f77-1ec8-4d46-8f5a-0ea8807e2d8a",
+					"type": "string"
+				},
+				"revision": {
+					"example": 1,
+					"minimum": 1,
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeySearch": {
+			"properties": {
+				"excludeRevoked": {
+					"default": false,
+					"type": "boolean"
+				},
+				"page": {
+					"example": 1,
+					"minimum": 1,
+					"type": "integer"
+				},
+				"pageSize": {
+					"example": 20,
+					"maximum": 100,
+					"minimum": 1,
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeyStatus": {
+			"properties": {
+				"id": {
+					"example": "8a8f0f77-1ec8-4d46-8f5a-0ea8807e2d8a",
+					"type": "string"
+				},
+				"revision": {
+					"example": 1,
+					"minimum": 1,
+					"type": "integer"
+				},
+				"status": {
+					"enum": [
+						"Enable",
+						"Disable"
+					],
+					"example": "Disable",
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.APIKeyUpdate": {
+			"properties": {
+				"allowAppBinding": {
+					"default": false,
+					"type": "boolean"
+				},
+				"apiKeyValidityTime": {
+					"example": 120,
+					"maximum": 1440,
+					"minimum": 0,
+					"type": "integer"
+				},
+				"apiTrustedProxies": {
+					"example": "192.0.2.1",
+					"maxLength": 4096,
+					"type": "string"
+				},
+				"description": {
+					"example": "Used by the deployment service",
+					"maxLength": 256,
+					"type": "string"
+				},
+				"expiresAt": {
+					"example": "2030-01-01T00:00:00Z",
+					"format": "date-time",
+					"type": "string",
+					"x-nullable": true
+				},
+				"id": {
+					"example": "8a8f0f77-1ec8-4d46-8f5a-0ea8807e2d8a",
+					"type": "string"
+				},
+				"ipWhiteList": {
+					"example": "192.0.2.10",
+					"maxLength": 4096,
+					"type": "string"
+				},
+				"name": {
+					"example": "Deployment automation",
+					"maxLength": 64,
+					"minLength": 1,
+					"type": "string"
+				},
+				"revision": {
+					"example": 1,
+					"minimum": 1,
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
 		"dto.AgentAccountCreateReq": {
 			"properties": {
 				"apiKey": {
@@ -30218,6 +34040,9 @@ const docTemplate = `{
 				},
 				"apiType": {
 					"type": "string"
+				},
+				"appInstallId": {
+					"type": "integer"
 				},
 				"authMode": {
 					"type": "string"
@@ -30857,6 +34682,9 @@ const docTemplate = `{
 		},
 		"dto.AgentCreateReq": {
 			"properties": {
+				"accessHost": {
+					"type": "string"
+				},
 				"accountId": {
 					"type": "integer"
 				},
@@ -30867,7 +34695,9 @@ const docTemplate = `{
 					"enum": [
 						"openclaw",
 						"copaw",
-						"hermes-agent"
+						"hermes-agent",
+						"deepseek-harness",
+						"octop"
 					],
 					"type": "string"
 				},
@@ -31257,6 +35087,12 @@ const docTemplate = `{
 					},
 					"type": "array"
 				},
+				"builtinAvailable": {
+					"type": "boolean"
+				},
+				"builtinManaged": {
+					"type": "boolean"
+				},
 				"connectionMode": {
 					"type": "string"
 				},
@@ -31275,7 +35111,16 @@ const docTemplate = `{
 				"groupPolicy": {
 					"type": "string"
 				},
+				"groupSessionScope": {
+					"type": "string"
+				},
 				"installed": {
+					"type": "boolean"
+				},
+				"legacy": {
+					"type": "boolean"
+				},
+				"legacyConfigured": {
 					"type": "boolean"
 				},
 				"replyMode": {
@@ -31339,6 +35184,15 @@ const docTemplate = `{
 					],
 					"type": "string"
 				},
+				"groupSessionScope": {
+					"enum": [
+						"group",
+						"group_sender",
+						"group_topic",
+						"group_topic_sender"
+					],
+					"type": "string"
+				},
 				"replyMode": {
 					"type": "string"
 				},
@@ -31364,6 +35218,59 @@ const docTemplate = `{
 				"replyMode",
 				"requireMention"
 			],
+			"type": "object"
+		},
+		"dto.AgentFeishuSwitchReq": {
+			"properties": {
+				"agentId": {
+					"type": "integer"
+				},
+				"groupSessionScope": {
+					"enum": [
+						"group",
+						"group_sender",
+						"group_topic",
+						"group_topic_sender"
+					],
+					"type": "string"
+				},
+				"requireMention": {
+					"enum": [
+						"true",
+						"false"
+					],
+					"type": "string"
+				},
+				"streaming": {
+					"type": "boolean"
+				},
+				"taskID": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"agentId",
+				"groupSessionScope",
+				"requireMention",
+				"taskID"
+			],
+			"type": "object"
+		},
+		"dto.AgentFeishuTransition": {
+			"properties": {
+				"confirmed": {
+					"type": "boolean"
+				},
+				"groupSessionScope": {
+					"type": "string"
+				},
+				"requireMention": {
+					"type": "string"
+				},
+				"streaming": {
+					"type": "boolean"
+				}
+			},
 			"type": "object"
 		},
 		"dto.AgentHermesChatSessionDeleteReq": {
@@ -31436,6 +35343,9 @@ const docTemplate = `{
 		},
 		"dto.AgentItem": {
 			"properties": {
+				"accessHost": {
+					"type": "string"
+				},
 				"accountId": {
 					"type": "integer"
 				},
@@ -31537,6 +35447,12 @@ const docTemplate = `{
 					},
 					"type": "array"
 				},
+				"metadata": {
+					"items": {
+						"$ref": "#/definitions/dto.AgentModelMetadata"
+					},
+					"type": "array"
+				},
 				"model": {
 					"type": "string"
 				}
@@ -31557,6 +35473,12 @@ const docTemplate = `{
 					},
 					"type": "array"
 				},
+				"metadata": {
+					"items": {
+						"$ref": "#/definitions/dto.AgentModelMetadata"
+					},
+					"type": "array"
+				},
 				"model": {
 					"type": "string"
 				}
@@ -31564,6 +35486,34 @@ const docTemplate = `{
 			"required": [
 				"accountId",
 				"agentId",
+				"model"
+			],
+			"type": "object"
+		},
+		"dto.AgentModelMetadata": {
+			"properties": {
+				"contextWindow": {
+					"minimum": 0,
+					"type": "integer"
+				},
+				"inputMode": {
+					"enum": [
+						"auto",
+						"text",
+						"image"
+					],
+					"type": "string"
+				},
+				"maxTokens": {
+					"minimum": 0,
+					"type": "integer"
+				},
+				"model": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"inputMode",
 				"model"
 			],
 			"type": "object"
@@ -32757,8 +36707,30 @@ const docTemplate = `{
 			],
 			"type": "object"
 		},
+		"dto.AlertConfigStatusUpdate": {
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"status": {
+					"enum": [
+						"Enable",
+						"Disable"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"id",
+				"status"
+			],
+			"type": "object"
+		},
 		"dto.AlertConfigTest": {
 			"properties": {
+				"config": {
+					"type": "string"
+				},
 				"displayName": {
 					"type": "string"
 				},
@@ -32768,6 +36740,9 @@ const docTemplate = `{
 				},
 				"host": {
 					"type": "string"
+				},
+				"id": {
+					"type": "integer"
 				},
 				"password": {
 					"type": "string"
@@ -32779,6 +36754,9 @@ const docTemplate = `{
 					"type": "string"
 				},
 				"sender": {
+					"type": "string"
+				},
+				"type": {
 					"type": "string"
 				},
 				"userName": {
@@ -32797,6 +36775,9 @@ const docTemplate = `{
 				},
 				"id": {
 					"type": "integer"
+				},
+				"revision": {
+					"type": "string"
 				},
 				"status": {
 					"type": "string"
@@ -33201,6 +37182,12 @@ const docTemplate = `{
 				"dockerCompose": {
 					"type": "string"
 				},
+				"feishuConfigured": {
+					"type": "boolean"
+				},
+				"feishuLegacy": {
+					"type": "boolean"
+				},
 				"version": {
 					"type": "string"
 				}
@@ -33457,11 +37444,14 @@ const docTemplate = `{
 			"properties": {
 				"quicks": {
 					"items": {
-						"$ref": "#/definitions/dto.QuickJump"
+						"$ref": "#/definitions/dto.QuickVisibility"
 					},
 					"type": "array"
 				}
 			},
+			"required": [
+				"quicks"
+			],
 			"type": "object"
 		},
 		"dto.ChangeRedisPass": {
@@ -34300,6 +38290,9 @@ const docTemplate = `{
 				"containerID": {
 					"type": "string"
 				},
+				"containerName": {
+					"type": "string"
+				},
 				"cpuPercent": {
 					"type": "number"
 				},
@@ -34765,6 +38758,14 @@ const docTemplate = `{
 				"alertTitle": {
 					"type": "string"
 				},
+				"alertTriggerMode": {
+					"enum": [
+						"failed",
+						"success",
+						"both"
+					],
+					"type": "string"
+				},
 				"appID": {
 					"type": "string"
 				},
@@ -34892,6 +38893,14 @@ const docTemplate = `{
 					"type": "string"
 				},
 				"alertTitle": {
+					"type": "string"
+				},
+				"alertTriggerMode": {
+					"enum": [
+						"failed",
+						"success",
+						"both"
+					],
 					"type": "string"
 				},
 				"apps": {
@@ -35359,6 +39368,12 @@ const docTemplate = `{
 				},
 				"netBytesSent": {
 					"type": "integer"
+				},
+				"npuData": {
+					"items": {
+						"$ref": "#/definitions/dto.NPUInfo"
+					},
+					"type": "array"
 				},
 				"procs": {
 					"type": "integer"
@@ -35841,9 +39856,6 @@ const docTemplate = `{
 		},
 		"dto.DockerPortGuardBase": {
 			"properties": {
-				"ipv6Enabled": {
-					"type": "boolean"
-				},
 				"backend": {
 					"type": "string"
 				},
@@ -35858,6 +39870,9 @@ const docTemplate = `{
 				},
 				"ipv6": {
 					"$ref": "#/definitions/dto.DockerPortGuardFamilyStatus"
+				},
+				"ipv6Enabled": {
+					"type": "boolean"
 				},
 				"isExist": {
 					"type": "boolean"
@@ -35960,39 +39975,6 @@ const docTemplate = `{
 					"type": "string"
 				}
 			},
-			"type": "object"
-		},
-		"dto.DockerPortGuardEndpointIdentity": {
-			"properties": {
-				"family": {
-					"enum": [
-						"ipv4",
-						"ipv6"
-					],
-					"type": "string"
-				},
-				"hostIP": {
-					"maxLength": 45,
-					"type": "string"
-				},
-				"hostPort": {
-					"minimum": 1,
-					"type": "integer"
-				},
-				"protocol": {
-					"enum": [
-						"tcp",
-						"udp"
-					],
-					"type": "string"
-				}
-			},
-			"required": [
-				"family",
-				"hostIP",
-				"hostPort",
-				"protocol"
-			],
 			"type": "object"
 		},
 		"dto.DockerPortGuardFamilyStatus": {
@@ -36315,6 +40297,100 @@ const docTemplate = `{
 			],
 			"type": "object"
 		},
+		"dto.FeaturedModel": {
+			"properties": {
+				"activeParams": {
+					"type": "string"
+				},
+				"architecture": {
+					"type": "string"
+				},
+				"backboneParams": {
+					"type": "string"
+				},
+				"description": {
+					"additionalProperties": {
+						"type": "string"
+					},
+					"type": "object"
+				},
+				"engram": {
+					"type": "string"
+				},
+				"family": {
+					"type": "string"
+				},
+				"key": {
+					"type": "string"
+				},
+				"repoID": {
+					"type": "string"
+				},
+				"sort": {
+					"type": "integer"
+				},
+				"sourceModelIds": {
+					"additionalProperties": {
+						"type": "string"
+					},
+					"type": "object"
+				},
+				"sources": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"weightGB": {
+					"type": "number"
+				}
+			},
+			"type": "object"
+		},
+		"dto.FeaturedModelPage": {
+			"properties": {
+				"families": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"items": {},
+				"total": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.FeaturedModelSearch": {
+			"properties": {
+				"family": {
+					"type": "string"
+				},
+				"info": {
+					"type": "string"
+				},
+				"page": {
+					"type": "integer"
+				},
+				"pageSize": {
+					"type": "integer"
+				}
+			},
+			"required": [
+				"page",
+				"pageSize"
+			],
+			"type": "object"
+		},
+		"dto.FileDownloadPreference": {
+			"properties": {
+				"useServerFilename": {
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
 		"dto.FileManageAIInfo": {
 			"properties": {
 				"aiAccountId": {
@@ -36383,14 +40459,14 @@ const docTemplate = `{
 				"initialized": {
 					"type": "boolean"
 				},
+				"partial": {
+					"type": "boolean"
+				},
 				"raInterfaces": {
 					"items": {
 						"type": "string"
 					},
 					"type": "array"
-				},
-				"partial": {
-					"type": "boolean"
 				},
 				"reason": {
 					"type": "string"
@@ -36559,6 +40635,10 @@ const docTemplate = `{
 		},
 		"dto.FirewallLifecycleOperation": {
 			"properties": {
+				"backupFile": {
+					"maxLength": 255,
+					"type": "string"
+				},
 				"operation": {
 					"enum": [
 						"start",
@@ -36848,22 +40928,6 @@ const docTemplate = `{
 			},
 			"type": "object"
 		},
-		"dto.FirewallRuleDeleteTarget": {
-			"properties": {
-				"instanceKey": {
-					"maxLength": 128,
-					"type": "string"
-				},
-				"scope": {
-					"$ref": "#/definitions/filter.Scope"
-				}
-			},
-			"required": [
-				"instanceKey",
-				"scope"
-			],
-			"type": "object"
-		},
 		"dto.FirewallRuleInventory": {
 			"properties": {
 				"actions": {
@@ -37037,14 +41101,14 @@ const docTemplate = `{
 		},
 		"dto.FirewallSettings": {
 			"properties": {
-				"ipv6Enabled": {
-					"type": "boolean"
-				},
 				"docker": {
 					"$ref": "#/definitions/dto.FirewallBackendGroup"
 				},
 				"forwarding": {
 					"$ref": "#/definitions/dto.FirewallBackendGroup"
+				},
+				"ipv6Enabled": {
+					"type": "boolean"
 				},
 				"panelPort": {
 					"type": "string"
@@ -37069,9 +41133,6 @@ const docTemplate = `{
 		},
 		"dto.FirewallSubsystemStatus": {
 			"properties": {
-				"ipv6Enabled": {
-					"type": "boolean"
-				},
 				"backend": {
 					"type": "string"
 				},
@@ -37083,6 +41144,9 @@ const docTemplate = `{
 				},
 				"ipv6": {
 					"$ref": "#/definitions/dto.FirewallBackendFamilyStatus"
+				},
+				"ipv6Enabled": {
+					"type": "boolean"
 				},
 				"isActive": {
 					"type": "boolean"
@@ -37149,59 +41213,6 @@ const docTemplate = `{
 						"type": "integer"
 					},
 					"type": "array"
-				}
-			},
-			"type": "object"
-		},
-		"dto.ForwardRule": {
-			"properties": {
-				"address": {
-					"type": "string"
-				},
-				"chain": {
-					"type": "string"
-				},
-				"description": {
-					"type": "string"
-				},
-				"family": {
-					"type": "string"
-				},
-				"id": {
-					"type": "integer"
-				},
-				"interface": {
-					"type": "string"
-				},
-				"isDesired": {
-					"type": "boolean"
-				},
-				"isRuntime": {
-					"type": "boolean"
-				},
-				"num": {
-					"type": "string"
-				},
-				"port": {
-					"type": "string"
-				},
-				"protocol": {
-					"type": "string"
-				},
-				"strategy": {
-					"type": "string"
-				},
-				"syncStatus": {
-					"type": "string"
-				},
-				"targetIP": {
-					"type": "string"
-				},
-				"targetPort": {
-					"type": "string"
-				},
-				"usedStatus": {
-					"type": "string"
 				}
 			},
 			"type": "object"
@@ -37379,6 +41390,12 @@ const docTemplate = `{
 		},
 		"dto.GPUInfo": {
 			"properties": {
+				"busID": {
+					"type": "string"
+				},
+				"chipIndex": {
+					"type": "integer"
+				},
 				"fanSpeed": {
 					"type": "string"
 				},
@@ -37399,6 +41416,9 @@ const docTemplate = `{
 				},
 				"memoryUsage": {
 					"type": "string"
+				},
+				"npuIndex": {
+					"type": "integer"
 				},
 				"performanceState": {
 					"type": "string"
@@ -37876,6 +41896,84 @@ const docTemplate = `{
 			],
 			"type": "object"
 		},
+		"dto.LocalModelDelete": {
+			"properties": {
+				"downloadType": {
+					"enum": [
+						"all",
+						"tokenizer"
+					],
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"withFile": {
+					"type": "boolean"
+				}
+			},
+			"required": [
+				"name"
+			],
+			"type": "object"
+		},
+		"dto.LocalModelItem": {
+			"properties": {
+				"createdAt": {
+					"type": "string"
+				},
+				"downloadType": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"repoID": {
+					"type": "string"
+				},
+				"revision": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				},
+				"sizeFormatted": {
+					"type": "string"
+				},
+				"source": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.LocalModelSearch": {
+			"properties": {
+				"downloadType": {
+					"enum": [
+						"all",
+						"tokenizer"
+					],
+					"type": "string"
+				},
+				"info": {
+					"type": "string"
+				},
+				"page": {
+					"type": "integer"
+				},
+				"pageSize": {
+					"type": "integer"
+				}
+			},
+			"required": [
+				"page",
+				"pageSize"
+			],
+			"type": "object"
+		},
 		"dto.Locale": {
 			"properties": {
 				"en": {
@@ -37978,9 +42076,6 @@ const docTemplate = `{
 				"isEnterprise": {
 					"type": "boolean"
 				},
-				"isFxplay": {
-					"type": "boolean"
-				},
 				"isIntl": {
 					"type": "boolean"
 				},
@@ -37998,6 +42093,9 @@ const docTemplate = `{
 				},
 				"needCaptcha": {
 					"type": "boolean"
+				},
+				"panelCache": {
+					"type": "string"
 				},
 				"panelName": {
 					"type": "string"
@@ -38052,6 +42150,303 @@ const docTemplate = `{
 				"interval",
 				"secret"
 			],
+			"type": "object"
+		},
+		"dto.ModelDownload": {
+			"properties": {
+				"downloadType": {
+					"enum": [
+						"all",
+						"tokenizer"
+					],
+					"type": "string"
+				},
+				"repoID": {
+					"type": "string"
+				},
+				"revision": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"repoID"
+			],
+			"type": "object"
+		},
+		"dto.ModelDownloadTaskItem": {
+			"properties": {
+				"canCancel": {
+					"type": "boolean"
+				},
+				"canRemoveRecord": {
+					"type": "boolean"
+				},
+				"canRetry": {
+					"type": "boolean"
+				},
+				"completedAt": {
+					"type": "string"
+				},
+				"createdAt": {
+					"type": "string"
+				},
+				"downloadType": {
+					"type": "string"
+				},
+				"downloadedSize": {
+					"type": "integer"
+				},
+				"errorMessage": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"localModel": {
+					"$ref": "#/definitions/dto.LocalModelItem"
+				},
+				"modelName": {
+					"type": "string"
+				},
+				"progress": {
+					"type": "number"
+				},
+				"repoID": {
+					"type": "string"
+				},
+				"revision": {
+					"type": "string"
+				},
+				"source": {
+					"type": "string"
+				},
+				"startedAt": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				},
+				"targetDir": {
+					"type": "string"
+				},
+				"totalSize": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.ModelDownloadTaskOperate": {
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"withFile": {
+					"type": "boolean"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.ModelDownloadTaskRetry": {
+			"properties": {
+				"id": {
+					"type": "integer"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.ModelDownloadTaskSearch": {
+			"properties": {
+				"downloadType": {
+					"enum": [
+						"all",
+						"tokenizer"
+					],
+					"type": "string"
+				},
+				"includeLocal": {
+					"type": "boolean"
+				},
+				"info": {
+					"type": "string"
+				},
+				"page": {
+					"type": "integer"
+				},
+				"pageSize": {
+					"type": "integer"
+				},
+				"status": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"page",
+				"pageSize"
+			],
+			"type": "object"
+		},
+		"dto.ModelDownloaderSetting": {
+			"properties": {
+				"featuredModelsSync": {
+					"type": "string"
+				},
+				"hfEndpoint": {
+					"type": "string"
+				},
+				"hfToken": {
+					"type": "string"
+				},
+				"modelDir": {
+					"type": "string"
+				},
+				"modelScopeEndpoint": {
+					"type": "string"
+				},
+				"modelScopeToken": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"modelDir"
+			],
+			"type": "object"
+		},
+		"dto.ModelDownloaderSyncSetting": {
+			"properties": {
+				"value": {
+					"enum": [
+						"Enable",
+						"Disable"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"value"
+			],
+			"type": "object"
+		},
+		"dto.ModelFile": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				},
+				"sizeFormatted": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.ModelInfo": {
+			"properties": {
+				"downloads": {
+					"type": "integer"
+				},
+				"files": {
+					"items": {
+						"$ref": "#/definitions/dto.ModelFile"
+					},
+					"type": "array"
+				},
+				"likes": {
+					"type": "integer"
+				},
+				"modelCard": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"repoID": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				},
+				"sizeFormatted": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.ModelInfoReq": {
+			"properties": {
+				"repoID": {
+					"type": "string"
+				},
+				"revision": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"repoID"
+			],
+			"type": "object"
+		},
+		"dto.ModelItem": {
+			"properties": {
+				"downloads": {
+					"type": "integer"
+				},
+				"likes": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"repoID": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				},
+				"sizeFormatted": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.ModelSearch": {
+			"properties": {
+				"limit": {
+					"maximum": 100,
+					"minimum": 1,
+					"type": "integer"
+				},
+				"page": {
+					"minimum": 1,
+					"type": "integer"
+				},
+				"pageSize": {
+					"maximum": 100,
+					"minimum": 1,
+					"type": "integer"
+				},
+				"query": {
+					"type": "string"
+				},
+				"sort": {
+					"enum": [
+						"trending",
+						"downloads",
+						"updated",
+						"created",
+						"likes",
+						"most_params",
+						"least_params"
+					],
+					"type": "string"
+				}
+			},
 			"type": "object"
 		},
 		"dto.MongodbBind": {
@@ -38303,6 +42698,21 @@ const docTemplate = `{
 			],
 			"type": "object"
 		},
+		"dto.MonitorClean": {
+			"properties": {
+				"type": {
+					"enum": [
+						"host",
+						"gpu"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"type"
+			],
+			"type": "object"
+		},
 		"dto.MonitorData": {
 			"properties": {
 				"date": {
@@ -38323,9 +42733,78 @@ const docTemplate = `{
 		},
 		"dto.MonitorGPUData": {
 			"properties": {
+				"aiCPUUtil": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"bucketSeconds": {
+					"type": "integer"
+				},
+				"computeUtil": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"copyUtil": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"ctrlCPUUtil": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
 				"date": {
 					"items": {
 						"type": "string"
+					},
+					"type": "array"
+				},
+				"ddrBandwidth": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"ddrTotal": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"ddrUsed": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"decoderUtil": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"encoderUtil": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"fanRPM": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"frequencyValue": {
+					"items": {
+						"type": "number"
 					},
 					"type": "array"
 				},
@@ -38344,7 +42823,85 @@ const docTemplate = `{
 					},
 					"type": "array"
 				},
+				"hbmBandwidth": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"hbmTotal": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"hbmUsed": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"hotspotTemperature": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"hugepagesTotal": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"hugepagesUsed": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"jpegUtil": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"mediaFrequency": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"mediaUtil": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"memoryActivity": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"memoryBandwidth": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"memoryFrequencyValue": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
 				"memoryPercent": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"memoryTemperatureValue": {
 					"items": {
 						"type": "number"
 					},
@@ -38357,6 +42914,12 @@ const docTemplate = `{
 					"type": "array"
 				},
 				"memoryUsed": {
+					"items": {
+						"type": "number"
+					},
+					"type": "array"
+				},
+				"ofaUtil": {
 					"items": {
 						"type": "number"
 					},
@@ -38382,13 +42945,16 @@ const docTemplate = `{
 				},
 				"processCount": {
 					"items": {
-						"type": "integer"
+						"type": "number"
 					},
 					"type": "array"
 				},
+				"sampleCount": {
+					"type": "integer"
+				},
 				"speedValue": {
 					"items": {
-						"type": "integer"
+						"type": "number"
 					},
 					"type": "array"
 				},
@@ -38403,8 +42969,21 @@ const docTemplate = `{
 		},
 		"dto.MonitorGPUSearch": {
 			"properties": {
+				"aggregation": {
+					"enum": [
+						"avg",
+						"max"
+					],
+					"type": "string"
+				},
+				"deviceID": {
+					"type": "string"
+				},
 				"endTime": {
 					"type": "string"
+				},
+				"legacy": {
+					"type": "boolean"
 				},
 				"productName": {
 					"type": "string"
@@ -38454,6 +43033,15 @@ const docTemplate = `{
 				"defaultNetwork": {
 					"type": "string"
 				},
+				"gpuMonitorInterval": {
+					"type": "string"
+				},
+				"gpuMonitorStatus": {
+					"type": "string"
+				},
+				"gpuMonitorStoreDays": {
+					"type": "string"
+				},
 				"monitorInterval": {
 					"type": "string"
 				},
@@ -38461,6 +43049,15 @@ const docTemplate = `{
 					"type": "string"
 				},
 				"monitorStoreDays": {
+					"type": "string"
+				},
+				"vllmMonitorInterval": {
+					"type": "string"
+				},
+				"vllmMonitorStatus": {
+					"type": "string"
+				},
+				"vllmMonitorStoreDays": {
 					"type": "string"
 				}
 			},
@@ -38473,6 +43070,12 @@ const docTemplate = `{
 						"MonitorStatus",
 						"MonitorStoreDays",
 						"MonitorInterval",
+						"GPUMonitorStatus",
+						"GPUMonitorStoreDays",
+						"GPUMonitorInterval",
+						"VLLMMonitorStatus",
+						"VLLMMonitorStoreDays",
+						"VLLMMonitorInterval",
 						"DefaultNetwork",
 						"DefaultIO"
 					],
@@ -39078,6 +43681,65 @@ const docTemplate = `{
 			},
 			"type": "object"
 		},
+		"dto.NPUInfo": {
+			"properties": {
+				"aiCore": {
+					"type": "string"
+				},
+				"busID": {
+					"type": "string"
+				},
+				"chipIndex": {
+					"type": "integer"
+				},
+				"hbmTotal": {
+					"type": "string"
+				},
+				"hbmUsed": {
+					"type": "string"
+				},
+				"health": {
+					"type": "string"
+				},
+				"hugepagesTotal": {
+					"type": "string"
+				},
+				"hugepagesUsed": {
+					"type": "string"
+				},
+				"index": {
+					"type": "integer"
+				},
+				"memTotal": {
+					"type": "string"
+				},
+				"memUsed": {
+					"type": "string"
+				},
+				"memoryTotal": {
+					"type": "string"
+				},
+				"memoryUsed": {
+					"type": "string"
+				},
+				"npuIndex": {
+					"type": "integer"
+				},
+				"powerDraw": {
+					"type": "string"
+				},
+				"productName": {
+					"type": "string"
+				},
+				"temperature": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
 		"dto.NetworkCreate": {
 			"properties": {
 				"auxAddress": {
@@ -39159,7 +43821,8 @@ const docTemplate = `{
 				"ssl",
 				"cache",
 				"http-per",
-				"proxy-cache"
+				"proxy-cache",
+				"brotli"
 			],
 			"type": "string",
 			"x-enum-varnames": [
@@ -39168,7 +43831,8 @@ const docTemplate = `{
 				"SSL",
 				"CACHE",
 				"HttpPer",
-				"ProxyCache"
+				"ProxyCache",
+				"Brotli"
 			]
 		},
 		"dto.NginxModuleArtifact": {
@@ -39344,17 +44008,6 @@ const docTemplate = `{
 				},
 				"websiteID": {
 					"type": "integer"
-				}
-			},
-			"type": "object"
-		},
-		"dto.OllamaModelDropList": {
-			"properties": {
-				"id": {
-					"type": "integer"
-				},
-				"name": {
-					"type": "string"
 				}
 			},
 			"type": "object"
@@ -40070,6 +44723,55 @@ const docTemplate = `{
 			},
 			"type": "object"
 		},
+		"dto.QuickDirectoryCreate": {
+			"properties": {
+				"alias": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"path"
+			],
+			"type": "object"
+		},
+		"dto.QuickDirectoryDelete": {
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"legacy": {
+					"type": "boolean"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.QuickDirectoryUpdate": {
+			"properties": {
+				"alias": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"legacy": {
+					"type": "boolean"
+				},
+				"path": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id",
+				"path"
+			],
+			"type": "object"
+		},
 		"dto.QuickJump": {
 			"properties": {
 				"alias": {
@@ -40097,6 +44799,20 @@ const docTemplate = `{
 					"type": "string"
 				}
 			},
+			"type": "object"
+		},
+		"dto.QuickVisibility": {
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"isShow": {
+					"type": "boolean"
+				}
+			},
+			"required": [
+				"id"
+			],
 			"type": "object"
 		},
 		"dto.RecordFileSize": {
@@ -40158,12 +44874,12 @@ const docTemplate = `{
 			"type": "object"
 		},
 		"dto.RedisCliInstall": {
-			"type": "object",
 			"properties": {
 				"taskID": {
 					"type": "string"
 				}
-			}
+			},
+			"type": "object"
 		},
 		"dto.RedisConf": {
 			"properties": {
@@ -40386,12 +45102,6 @@ const docTemplate = `{
 					"type": "string"
 				},
 				"encryptionMode": {
-					"enum": [
-						"rsa",
-						"ed25519",
-						"ecdsa",
-						"dsa"
-					],
 					"type": "string"
 				},
 				"id": {
@@ -40413,9 +45123,6 @@ const docTemplate = `{
 					"type": "string"
 				}
 			},
-			"required": [
-				"encryptionMode"
-			],
 			"type": "object"
 		},
 		"dto.RunningTime": {
@@ -41065,6 +45772,9 @@ const docTemplate = `{
 				"noAuthSetting": {
 					"type": "string"
 				},
+				"panelCache": {
+					"type": "string"
+				},
 				"panelName": {
 					"type": "string"
 				},
@@ -41577,6 +46287,17 @@ const docTemplate = `{
 			},
 			"type": "object"
 		},
+		"dto.TerminalSessionClose": {
+			"properties": {
+				"id": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
 		"dto.TerminalUpdate": {
 			"properties": {
 				"backgroundColor": {
@@ -41610,6 +46331,10 @@ const docTemplate = `{
 					"type": "string"
 				},
 				"showTerminalButton": {
+					"enum": [
+						"Enable",
+						"Disable"
+					],
 					"type": "string"
 				}
 			},
@@ -41730,6 +46455,1244 @@ const docTemplate = `{
 			},
 			"type": "object"
 		},
+		"dto.VMCreate": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"bootOrder": {
+					"type": "string"
+				},
+				"cpu": {
+					"minimum": 1,
+					"type": "integer"
+				},
+				"description": {
+					"type": "string"
+				},
+				"diskBus": {
+					"enum": [
+						"sata",
+						"virtio"
+					],
+					"type": "string"
+				},
+				"diskPath": {
+					"type": "string"
+				},
+				"diskSize": {
+					"minimum": 1,
+					"type": "integer"
+				},
+				"imagePath": {
+					"type": "string"
+				},
+				"isoPaths": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"memory": {
+					"minimum": 1,
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"network": {
+					"type": "string"
+				},
+				"osType": {
+					"enum": [
+						"windows",
+						"linux",
+						"other"
+					],
+					"type": "string"
+				},
+				"startAfterCreate": {
+					"type": "boolean"
+				},
+				"storagePool": {
+					"type": "string"
+				},
+				"taskID": {
+					"type": "string"
+				},
+				"templateID": {
+					"type": "integer"
+				}
+			},
+			"required": [
+				"cpu",
+				"diskSize",
+				"memory",
+				"name",
+				"network"
+			],
+			"type": "object"
+		},
+		"dto.VMDelete": {
+			"properties": {
+				"force": {
+					"type": "boolean"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"taskID": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.VMDisk": {
+			"properties": {
+				"bus": {
+					"type": "string"
+				},
+				"capacity": {
+					"type": "integer"
+				},
+				"device": {
+					"type": "string"
+				},
+				"format": {
+					"type": "string"
+				},
+				"readOnly": {
+					"type": "boolean"
+				},
+				"resizeBlocked": {
+					"type": "string"
+				},
+				"shareable": {
+					"type": "boolean"
+				},
+				"source": {
+					"type": "string"
+				},
+				"target": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMDiskResize": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"sizeGiB": {
+					"maximum": 8388607,
+					"minimum": 1,
+					"type": "integer"
+				},
+				"target": {
+					"type": "string"
+				},
+				"taskID": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"sizeGiB",
+				"target"
+			],
+			"type": "object"
+		},
+		"dto.VMDiskStats": {
+			"properties": {
+				"readBytes": {
+					"type": "integer"
+				},
+				"readReqs": {
+					"type": "integer"
+				},
+				"writeBytes": {
+					"type": "integer"
+				},
+				"writeReqs": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMEnvironment": {
+			"properties": {
+				"arch": {
+					"type": "string"
+				},
+				"archSupported": {
+					"type": "boolean"
+				},
+				"helperExist": {
+					"type": "boolean"
+				},
+				"helperMessage": {
+					"type": "string"
+				},
+				"kvmExist": {
+					"type": "boolean"
+				},
+				"kvmMessage": {
+					"type": "string"
+				},
+				"libvirtActive": {
+					"type": "boolean"
+				},
+				"libvirtExist": {
+					"type": "boolean"
+				},
+				"libvirtMessage": {
+					"type": "string"
+				},
+				"ready": {
+					"type": "boolean"
+				},
+				"storageExist": {
+					"type": "boolean"
+				},
+				"storageMessage": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMGraphics": {
+			"properties": {
+				"listen": {
+					"type": "string"
+				},
+				"port": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMHealthCheckItem": {
+			"properties": {
+				"check": {
+					"type": "string"
+				},
+				"detail": {
+					"type": "string"
+				},
+				"fixCommand": {
+					"type": "string"
+				},
+				"level": {
+					"type": "string"
+				},
+				"params": {
+					"additionalProperties": {
+						"type": "string"
+					},
+					"type": "object"
+				},
+				"reason": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMHealthCheckResult": {
+			"properties": {
+				"fail": {
+					"type": "integer"
+				},
+				"items": {
+					"items": {
+						"$ref": "#/definitions/dto.VMHealthCheckItem"
+					},
+					"type": "array"
+				},
+				"pass": {
+					"type": "integer"
+				},
+				"warn": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMInfo": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"bootOrder": {
+					"type": "string"
+				},
+				"cpu": {
+					"type": "integer"
+				},
+				"createTaskID": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"diskBus": {
+					"type": "string"
+				},
+				"diskPath": {
+					"type": "string"
+				},
+				"diskSize": {
+					"type": "integer"
+				},
+				"disks": {
+					"items": {
+						"$ref": "#/definitions/dto.VMDisk"
+					},
+					"type": "array"
+				},
+				"graphics": {
+					"$ref": "#/definitions/dto.VMGraphics"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"imagePath": {
+					"type": "string"
+				},
+				"interfaces": {
+					"items": {
+						"$ref": "#/definitions/dto.VMInterface"
+					},
+					"type": "array"
+				},
+				"isoPaths": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"memory": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"network": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				},
+				"storagePool": {
+					"type": "string"
+				},
+				"taskID": {
+					"type": "string"
+				},
+				"uuid": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMInfoReq": {
+			"properties": {
+				"checkDisks": {
+					"type": "boolean"
+				},
+				"name": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name"
+			],
+			"type": "object"
+		},
+		"dto.VMInterface": {
+			"properties": {
+				"ip": {
+					"type": "string"
+				},
+				"mac": {
+					"type": "string"
+				},
+				"model": {
+					"type": "string"
+				},
+				"source": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMIsoCreate": {
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"path",
+				"type"
+			],
+			"type": "object"
+		},
+		"dto.VMIsoDelete": {
+			"properties": {
+				"deleteFile": {
+					"type": "boolean"
+				},
+				"id": {
+					"type": "integer"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.VMIsoImportStart": {
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"status": {
+					"enum": [
+						"uploading",
+						"downloading"
+					],
+					"type": "string"
+				},
+				"tempFileID": {
+					"type": "string"
+				},
+				"tempFileType": {
+					"enum": [
+						"upload",
+						"download"
+					],
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"path",
+				"status",
+				"type"
+			],
+			"type": "object"
+		},
+		"dto.VMIsoImportUpdate": {
+			"properties": {
+				"error": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"status": {
+					"enum": [
+						"uploading",
+						"downloading",
+						"ready",
+						"failed"
+					],
+					"type": "string"
+				},
+				"tempFileID": {
+					"type": "string"
+				},
+				"tempFileType": {
+					"enum": [
+						"upload",
+						"download"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"id",
+				"status"
+			],
+			"type": "object"
+		},
+		"dto.VMIsoInfo": {
+			"properties": {
+				"createdAt": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"error": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"isExist": {
+					"type": "boolean"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				},
+				"status": {
+					"type": "string"
+				},
+				"tempFileID": {
+					"type": "string"
+				},
+				"tempFileType": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMIsoUpdate": {
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id",
+				"name",
+				"path",
+				"type"
+			],
+			"type": "object"
+		},
+		"dto.VMMemoryStats": {
+			"properties": {
+				"actualKiB": {
+					"type": "integer"
+				},
+				"availableKiB": {
+					"type": "integer"
+				},
+				"rssKiB": {
+					"type": "integer"
+				},
+				"unusedKiB": {
+					"type": "integer"
+				},
+				"usableKiB": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMNetworkBridgeItem": {
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"recommended": {
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMNetworkCreate": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"bridgeName": {
+					"type": "string"
+				},
+				"cidr": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"dhcpEnd": {
+					"type": "string"
+				},
+				"dhcpStart": {
+					"type": "string"
+				},
+				"gateway": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"sourceInterface": {
+					"type": "string"
+				},
+				"type": {
+					"enum": [
+						"nat",
+						"bridge",
+						"macvtap"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"type"
+			],
+			"type": "object"
+		},
+		"dto.VMNetworkIPUsage": {
+			"properties": {
+				"ip": {
+					"type": "string"
+				},
+				"mac": {
+					"type": "string"
+				},
+				"source": {
+					"type": "string"
+				},
+				"vmName": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMNetworkInterfaceItem": {
+			"properties": {
+				"addresses": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"name": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMNetworkItem": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"bridgeName": {
+					"type": "string"
+				},
+				"cidr": {
+					"type": "string"
+				},
+				"createdAt": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"dhcpEnd": {
+					"type": "string"
+				},
+				"dhcpStart": {
+					"type": "string"
+				},
+				"error": {
+					"type": "string"
+				},
+				"gateway": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"registered": {
+					"type": "boolean"
+				},
+				"sourceInterface": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"usedIPs": {
+					"items": {
+						"$ref": "#/definitions/dto.VMNetworkIPUsage"
+					},
+					"type": "array"
+				},
+				"vmCount": {
+					"type": "integer"
+				},
+				"vms": {
+					"items": {
+						"$ref": "#/definitions/dto.VMResourceRef"
+					},
+					"type": "array"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMNetworkStats": {
+			"properties": {
+				"rxBytes": {
+					"type": "integer"
+				},
+				"rxPackets": {
+					"type": "integer"
+				},
+				"txBytes": {
+					"type": "integer"
+				},
+				"txPackets": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMNetworkUpdate": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"description": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"status": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.VMOperate": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"operate": {
+					"enum": [
+						"start",
+						"shutdown",
+						"reboot",
+						"destroy",
+						"suspend",
+						"resume"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"operate"
+			],
+			"type": "object"
+		},
+		"dto.VMOrphanClean": {
+			"properties": {
+				"items": {
+					"items": {
+						"$ref": "#/definitions/dto.VMOrphanItem"
+					},
+					"minItems": 1,
+					"type": "array"
+				}
+			},
+			"required": [
+				"items"
+			],
+			"type": "object"
+		},
+		"dto.VMOrphanItem": {
+			"properties": {
+				"modifiedAt": {
+					"type": "integer"
+				},
+				"path": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				},
+				"type": {
+					"enum": [
+						"orphan_domain_disk",
+						"orphan_snapshot",
+						"partial_file"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"path",
+				"type"
+			],
+			"type": "object"
+		},
+		"dto.VMRename": {
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"newName": {
+					"type": "string"
+				},
+				"taskID": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"newName"
+			],
+			"type": "object"
+		},
+		"dto.VMReq": {
+			"properties": {
+				"name": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name"
+			],
+			"type": "object"
+		},
+		"dto.VMResourceDelete": {
+			"properties": {
+				"force": {
+					"type": "boolean"
+				},
+				"id": {
+					"type": "integer"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.VMResourceRef": {
+			"properties": {
+				"id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMSearchResult": {
+			"properties": {
+				"items": {},
+				"limit": {
+					"description": "Maximum VM count for the target node; 0 means unlimited.",
+					"type": "integer"
+				},
+				"total": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMSnapshotInfo": {
+			"properties": {
+				"children": {
+					"type": "integer"
+				},
+				"createdAt": {
+					"type": "integer"
+				},
+				"current": {
+					"type": "boolean"
+				},
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"parent": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				},
+				"state": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMSnapshotReq": {
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"snapshotName": {
+					"type": "string"
+				},
+				"taskID": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"snapshotName"
+			],
+			"type": "object"
+		},
+		"dto.VMSnapshotSearch": {
+			"properties": {
+				"name": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name"
+			],
+			"type": "object"
+		},
+		"dto.VMStats": {
+			"properties": {
+				"cpuTime": {
+					"type": "integer"
+				},
+				"disk": {
+					"$ref": "#/definitions/dto.VMDiskStats"
+				},
+				"memory": {
+					"$ref": "#/definitions/dto.VMMemoryStats"
+				},
+				"name": {
+					"type": "string"
+				},
+				"network": {
+					"$ref": "#/definitions/dto.VMNetworkStats"
+				},
+				"status": {
+					"type": "string"
+				},
+				"timestamp": {
+					"type": "integer"
+				},
+				"vcpu": {
+					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMStorageCreate": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"type": {
+					"enum": [
+						"dir"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"path",
+				"type"
+			],
+			"type": "object"
+		},
+		"dto.VMStorageItem": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"available": {
+					"type": "integer"
+				},
+				"capacity": {
+					"type": "integer"
+				},
+				"createdAt": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"error": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"vmCount": {
+					"type": "integer"
+				},
+				"vms": {
+					"items": {
+						"$ref": "#/definitions/dto.VMResourceRef"
+					},
+					"type": "array"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMStorageUpdate": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"description": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"path": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.VMTaskResp": {
+			"properties": {
+				"taskID": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMTemplateCreate": {
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"storagePool": {
+					"type": "string"
+				},
+				"taskID": {
+					"type": "string"
+				},
+				"templateName": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"templateName"
+			],
+			"type": "object"
+		},
+		"dto.VMTemplateDelete": {
+			"properties": {
+				"deleteDisk": {
+					"type": "boolean"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"taskID": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"id"
+			],
+			"type": "object"
+		},
+		"dto.VMTemplateInfo": {
+			"properties": {
+				"bootOrder": {
+					"type": "string"
+				},
+				"cpu": {
+					"type": "integer"
+				},
+				"createdAt": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"diskBus": {
+					"type": "string"
+				},
+				"diskPath": {
+					"type": "string"
+				},
+				"diskSize": {
+					"type": "integer"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"isExist": {
+					"type": "boolean"
+				},
+				"memory": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"network": {
+					"type": "string"
+				},
+				"size": {
+					"type": "integer"
+				},
+				"sourceVM": {
+					"type": "string"
+				},
+				"storagePool": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"dto.VMUpdate": {
+			"properties": {
+				"autoStart": {
+					"type": "boolean"
+				},
+				"bootOrder": {
+					"type": "string"
+				},
+				"cpu": {
+					"minimum": 1,
+					"type": "integer"
+				},
+				"description": {
+					"type": "string"
+				},
+				"isoPaths": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
+				},
+				"memory": {
+					"minimum": 1,
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"network": {
+					"type": "string"
+				},
+				"taskID": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"cpu",
+				"memory",
+				"name",
+				"network"
+			],
+			"type": "object"
+		},
 		"dto.VolumeCreate": {
 			"properties": {
 				"driver": {
@@ -41785,6 +47748,9 @@ const docTemplate = `{
 				"deviceName": {
 					"type": "string"
 				},
+				"gpuUtil": {
+					"type": "string"
+				},
 				"memory": {
 					"type": "string"
 				},
@@ -41792,6 +47758,9 @@ const docTemplate = `{
 					"type": "string"
 				},
 				"memoryUtil": {
+					"type": "string"
+				},
+				"pciBdfAddress": {
 					"type": "string"
 				},
 				"power": {
@@ -42163,36 +48132,6 @@ const docTemplate = `{
 				"ScopeNoticeFamilyUnavailable"
 			]
 		},
-		"github_com_1Panel-dev_1Panel_agent_utils_firewall_sync.ReasonCode": {
-			"enum": [
-				"invalid_policy",
-				"already_exists_in_target",
-				"only_exists_in_target",
-				"read_only_rule"
-			],
-			"type": "string",
-			"x-enum-varnames": [
-				"ReasonInvalidPolicy",
-				"ReasonAlreadyExists",
-				"ReasonOnlyExistsInTarget",
-				"ReasonReadOnlyRule"
-			]
-		},
-		"github_com_1Panel-dev_1Panel_agent_utils_firewall_sync.Status": {
-			"enum": [
-				"ready",
-				"existing",
-				"remove",
-				"blocked"
-			],
-			"type": "string",
-			"x-enum-varnames": [
-				"StatusReady",
-				"StatusExisting",
-				"StatusRemove",
-				"StatusBlocked"
-			]
-		},
 		"mfa.Otp": {
 			"properties": {
 				"qrImage": {
@@ -42357,6 +48296,12 @@ const docTemplate = `{
 				"message": {
 					"type": "string"
 				},
+				"modelAccountBaseURL": {
+					"type": "string"
+				},
+				"modelAccountBaseURLType": {
+					"type": "string"
+				},
 				"name": {
 					"type": "string"
 				},
@@ -42371,6 +48316,9 @@ const docTemplate = `{
 				},
 				"status": {
 					"type": "string"
+				},
+				"syncModelAccount": {
+					"type": "boolean"
 				},
 				"updatedAt": {
 					"type": "string"
@@ -42405,6 +48353,29 @@ const docTemplate = `{
 					"type": "string"
 				},
 				"type": {
+					"type": "string"
+				},
+				"updatedAt": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"model.QuickDirectory": {
+			"properties": {
+				"alias": {
+					"type": "string"
+				},
+				"createdAt": {
+					"type": "string"
+				},
+				"id": {
+					"type": "integer"
+				},
+				"legacy": {
+					"type": "boolean"
+				},
+				"path": {
 					"type": "string"
 				},
 				"updatedAt": {
@@ -42865,6 +48836,18 @@ const docTemplate = `{
 				"memoryUnit": {
 					"type": "string"
 				},
+				"modelAccountBaseURL": {
+					"type": "string"
+				},
+				"modelAccountBaseURLType": {
+					"enum": [
+						"container",
+						"localhost",
+						"systemIP",
+						"custom"
+					],
+					"type": "string"
+				},
 				"name": {
 					"type": "string"
 				},
@@ -42901,6 +48884,9 @@ const docTemplate = `{
 				},
 				"specifyIP": {
 					"type": "string"
+				},
+				"syncModelAccount": {
+					"type": "boolean"
 				},
 				"taskID": {
 					"type": "string"
@@ -42985,6 +48971,9 @@ const docTemplate = `{
 				},
 				"favorite": {
 					"type": "boolean"
+				},
+				"feishuTransition": {
+					"$ref": "#/definitions/dto.AgentFeishuTransition"
 				},
 				"forceDelete": {
 					"type": "boolean"
@@ -43085,6 +49074,18 @@ const docTemplate = `{
 				"memoryUnit": {
 					"type": "string"
 				},
+				"modelAccountBaseURL": {
+					"type": "string"
+				},
+				"modelAccountBaseURLType": {
+					"enum": [
+						"container",
+						"localhost",
+						"systemIP",
+						"custom"
+					],
+					"type": "string"
+				},
 				"params": {
 					"additionalProperties": true,
 					"type": "object"
@@ -43103,6 +49104,9 @@ const docTemplate = `{
 				},
 				"specifyIP": {
 					"type": "string"
+				},
+				"syncModelAccount": {
+					"type": "boolean"
 				},
 				"type": {
 					"type": "string"
@@ -44075,6 +50079,22 @@ const docTemplate = `{
 			],
 			"type": "object"
 		},
+		"request.FileProcessRemoveReq": {
+			"properties": {
+				"keys": {
+					"items": {
+						"type": "string"
+					},
+					"maxItems": 1000,
+					"minItems": 1,
+					"type": "array"
+				}
+			},
+			"required": [
+				"keys"
+			],
+			"type": "object"
+		},
 		"request.FileProcessReq": {
 			"properties": {
 				"key": {
@@ -44250,6 +50270,9 @@ const docTemplate = `{
 					"type": "string"
 				},
 				"useProxy": {
+					"type": "boolean"
+				},
+				"useServerFilename": {
 					"type": "boolean"
 				}
 			},
@@ -45588,6 +51611,9 @@ const docTemplate = `{
 		},
 		"request.RuntimeUpdate": {
 			"properties": {
+				"appDetailId": {
+					"type": "integer"
+				},
 				"clean": {
 					"type": "boolean"
 				},
@@ -45761,164 +51787,6 @@ const docTemplate = `{
 			],
 			"type": "object"
 		},
-		"request.TensorRTLLMCreate": {
-			"properties": {
-				"command": {
-					"type": "string"
-				},
-				"containerName": {
-					"type": "string"
-				},
-				"environments": {
-					"items": {
-						"$ref": "#/definitions/request.Environment"
-					},
-					"type": "array"
-				},
-				"exposedPorts": {
-					"items": {
-						"$ref": "#/definitions/request.ExposedPort"
-					},
-					"type": "array"
-				},
-				"image": {
-					"type": "string"
-				},
-				"modelDir": {
-					"type": "string"
-				},
-				"modelSpeedup": {
-					"type": "boolean"
-				},
-				"modelType": {
-					"type": "string"
-				},
-				"name": {
-					"type": "string"
-				},
-				"version": {
-					"type": "string"
-				},
-				"volumes": {
-					"items": {
-						"$ref": "#/definitions/request.Volume"
-					},
-					"type": "array"
-				}
-			},
-			"required": [
-				"command",
-				"containerName",
-				"image",
-				"modelDir",
-				"name",
-				"version"
-			],
-			"type": "object"
-		},
-		"request.TensorRTLLMDelete": {
-			"properties": {
-				"id": {
-					"type": "integer"
-				}
-			},
-			"required": [
-				"id"
-			],
-			"type": "object"
-		},
-		"request.TensorRTLLMOperate": {
-			"properties": {
-				"id": {
-					"type": "integer"
-				},
-				"operate": {
-					"type": "string"
-				}
-			},
-			"required": [
-				"id",
-				"operate"
-			],
-			"type": "object"
-		},
-		"request.TensorRTLLMSearch": {
-			"properties": {
-				"name": {
-					"type": "string"
-				},
-				"page": {
-					"type": "integer"
-				},
-				"pageSize": {
-					"type": "integer"
-				}
-			},
-			"required": [
-				"page",
-				"pageSize"
-			],
-			"type": "object"
-		},
-		"request.TensorRTLLMUpdate": {
-			"properties": {
-				"command": {
-					"type": "string"
-				},
-				"containerName": {
-					"type": "string"
-				},
-				"environments": {
-					"items": {
-						"$ref": "#/definitions/request.Environment"
-					},
-					"type": "array"
-				},
-				"exposedPorts": {
-					"items": {
-						"$ref": "#/definitions/request.ExposedPort"
-					},
-					"type": "array"
-				},
-				"id": {
-					"type": "integer"
-				},
-				"image": {
-					"type": "string"
-				},
-				"modelDir": {
-					"type": "string"
-				},
-				"modelSpeedup": {
-					"type": "boolean"
-				},
-				"modelType": {
-					"type": "string"
-				},
-				"name": {
-					"type": "string"
-				},
-				"version": {
-					"type": "string"
-				},
-				"volumes": {
-					"items": {
-						"$ref": "#/definitions/request.Volume"
-					},
-					"type": "array"
-				}
-			},
-			"required": [
-				"command",
-				"containerName",
-				"id",
-				"image",
-				"modelDir",
-				"name",
-				"version"
-			],
-			"type": "object"
-		},
 		"request.Volume": {
 			"properties": {
 				"mode": {
@@ -46051,6 +51919,38 @@ const docTemplate = `{
 				"keyType",
 				"name",
 				"organization"
+			],
+			"type": "object"
+		},
+		"request.WebsiteCAImport": {
+			"properties": {
+				"certificate": {
+					"type": "string"
+				},
+				"certificatePath": {
+					"type": "string"
+				},
+				"name": {
+					"maxLength": 128,
+					"type": "string"
+				},
+				"privateKey": {
+					"type": "string"
+				},
+				"privateKeyPath": {
+					"type": "string"
+				},
+				"type": {
+					"enum": [
+						"paste",
+						"local"
+					],
+					"type": "string"
+				}
+			},
+			"required": [
+				"name",
+				"type"
 			],
 			"type": "object"
 		},
@@ -47391,6 +53291,23 @@ const docTemplate = `{
 			],
 			"type": "object"
 		},
+		"request.AppUpdateVersion": {
+			"properties": {
+				"appInstallID": {
+					"type": "integer"
+				},
+				"loadCompose": {
+					"type": "boolean"
+				},
+				"updateVersion": {
+					"type": "string"
+				}
+			},
+			"required": [
+				"appInstallID"
+			],
+			"type": "object"
+		},
 		"response.AppConfig": {
 			"properties": {
 				"advanced": {
@@ -47398,6 +53315,9 @@ const docTemplate = `{
 				},
 				"allowPort": {
 					"type": "boolean"
+				},
+				"appKey": {
+					"type": "string"
 				},
 				"containerName": {
 					"type": "string"
@@ -47417,10 +53337,25 @@ const docTemplate = `{
 				"hostMode": {
 					"type": "boolean"
 				},
+				"httpPort": {
+					"type": "integer"
+				},
+				"isEdit": {
+					"type": "boolean"
+				},
 				"memoryLimit": {
 					"type": "number"
 				},
 				"memoryUnit": {
+					"type": "string"
+				},
+				"modelAccountBaseURL": {
+					"type": "string"
+				},
+				"modelAccountBaseURLType": {
+					"type": "string"
+				},
+				"name": {
 					"type": "string"
 				},
 				"params": {
@@ -47446,6 +53381,9 @@ const docTemplate = `{
 				},
 				"specifyIP": {
 					"type": "string"
+				},
+				"syncModelAccount": {
+					"type": "boolean"
 				},
 				"type": {
 					"type": "string"
@@ -47651,6 +53589,12 @@ const docTemplate = `{
 				"lastBackupAt": {
 					"type": "string"
 				},
+				"modelAccountBaseURL": {
+					"type": "string"
+				},
+				"modelAccountBaseURLType": {
+					"type": "string"
+				},
 				"name": {
 					"type": "string"
 				},
@@ -47676,6 +53620,9 @@ const docTemplate = `{
 				},
 				"gpuSupport": {
 					"type": "boolean"
+				},
+				"icon": {
+					"type": "string"
 				},
 				"id": {
 					"type": "integer"
@@ -48263,6 +54210,17 @@ const docTemplate = `{
 				},
 				"totalLines": {
 					"type": "integer"
+				}
+			},
+			"type": "object"
+		},
+		"response.FileProcessKeys": {
+			"properties": {
+				"keys": {
+					"items": {
+						"type": "string"
+					},
+					"type": "array"
 				}
 			},
 			"type": "object"
@@ -49694,6 +55652,62 @@ const docTemplate = `{
 				}
 			},
 			"type": "object"
+		},
+		"terminal.Info": {
+			"properties": {
+				"attached": {
+					"type": "boolean"
+				},
+				"createdAt": {
+					"type": "string"
+				},
+				"detachedAt": {
+					"description": "zero while attached",
+					"type": "string"
+				},
+				"hostId": {
+					"type": "integer"
+				},
+				"id": {
+					"type": "string"
+				},
+				"kind": {
+					"type": "string"
+				},
+				"persistent": {
+					"type": "boolean"
+				},
+				"title": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		}
+	},
+	"securityDefinitions": {
+		"ApiKeyAuth": {
+			"description": "Signed API Key authentication. Send the signature, never the plaintext API Key, in 1Panel-Token.\nSupported formats: hex(HMAC-SHA256(API-Key, '1panel:' + UnixTimestamp)) or md5('1panel' + API-Key + UnixTimestamp).\nSend the matching Unix timestamp in 1Panel-Timestamp. Optionally set 1Panel-Signature-Version to hmac-sha256, v1 or md5; omission accepts either algorithm.\nIndependent keys may include their ID in 1Panel-Key-ID to select the credential; omit that header for a legacy key.\n` + "`" + `` + "`" + `` + "`" + `\neg:\ncurl -X GET \"http://{host}:{port}/api/v2/toolbox/device/base\" \\\n-H \"1Panel-Token: \u003c1panel_token\u003e\" \\\n-H \"1Panel-Timestamp: \u003ccurrent_unix_timestamp\u003e\"\n` + "`" + `` + "`" + `` + "`" + `\n- ` + "`" + `1Panel-Token` + "`" + ` is the key for the panel API Key.",
+			"in": "header",
+			"name": "1Panel-Token",
+			"type": "apiKey"
+		},
+		"CSRFToken": {
+			"description": "For session-authenticated POST requests, copy the current pcsrftoken cookie value into X-CSRF-Token. API Key authentication does not require a CSRF token. Session-only endpoints reject 1Panel authentication headers even when a valid session cookie is present.",
+			"in": "header",
+			"name": "X-CSRF-Token",
+			"type": "apiKey"
+		},
+		"PanelSession": {
+			"description": "Existing panel login session: psession=\u003csession-cookie\u003e. Swagger 2.0 represents the cookie as a header; browsers send the established cookie automatically and cannot set Cookie manually. Use a logged-in same-origin browser for session-only operations.",
+			"in": "header",
+			"name": "Cookie",
+			"type": "apiKey"
+		},
+		"Timestamp": {
+			"description": "- ` + "`" + `1Panel-Timestamp` + "`" + ` is the Unix timestamp of the current time in seconds.",
+			"in": "header",
+			"name": "1Panel-Timestamp",
+			"type": "apiKey"
 		}
 	}
 }`

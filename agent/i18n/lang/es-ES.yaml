@@ -46,7 +46,7 @@ ErrHttpReqNotFound: 'No se pudo encontrar el recurso solicitado {{ .err }}'
 
 # salto rápido
 ErrMinQuickJump: 'Agrega al menos una entrada rápida'
-ErrMaxQuickJump: 'Máximo 4 entradas rápidas'
+ErrMaxQuickJump: 'Máximo 5 entradas rápidas'
 
 # común
 ErrShutDown: 'Comando detenido manualmente'
@@ -70,14 +70,14 @@ Decrypt: 'Descifrar'
 
 # agente
 ErrAgentAccountBound: 'Cuenta vinculada a agente'
-ErrTerminalAIAccountInUse: 'Esta cuenta de modelo esta siendo usada por Terminal AI. Cambia la cuenta en la configuracion de Terminal AI o desactiva Terminal AI y vuelve a intentarlo.'
-ErrFileAIAccountInUse: 'Esta cuenta de modelo está siendo utilizada por la IA del gestor de archivos. Cambia la cuenta en su configuración o desactívala y vuelve a intentarlo.'
+ErrTerminalAIAccountInUse: 'Este servicio de modelo esta siendo usado por Terminal AI. Cambia la cuenta en la configuracion de Terminal AI o desactiva Terminal AI y vuelve a intentarlo.'
+ErrFileAIAccountInUse: 'Este servicio de modelo está siendo utilizado por la IA del gestor de archivos. Cambia la cuenta en su configuración o desactívala y vuelve a intentarlo.'
 ErrAgentAccountUnavailable: 'Conexión de cuenta no disponible: {{ .err }}'
 ErrAgentProviderNotSupported: 'Proveedor de agente no soportado'
 ErrAgentAccountRequired: 'Elige una cuenta de agente primero'
 ErrAgentAccountNotVerified: 'Cuenta de agente no verificada'
 ErrAgentAccountModelsRequired: 'Configure al menos un modelo'
-ErrAgentAccountSingleInitialModel: 'Solo se puede configurar un modelo inicial al crear la cuenta'
+ErrAgentAccountSingleInitialModel: 'Este proveedor permite configurar como máximo un modelo'
 ErrAgentModelNotInAccount: 'El modelo no está configurado en la cuenta seleccionada'
 ErrAgentVerifyModelInUse: 'Este modelo se usa para verificar la cuenta. Seleccione otro modelo de verificación antes de eliminarlo'
 ErrAgentFallbackModelDuplicate: 'Los modelos de respaldo no pueden duplicarse'
@@ -252,6 +252,7 @@ ErrSSLCertificateNotFound: 'El archivo de certificado no existe'
 ErrSSLKeyFormat: 'Error en la verificación del archivo de clave privada'
 ErrSSLCertificateFormat: 'Formato de certificado incorrecto, use formato pem'
 ErrEabKidOrEabHmacKeyCannotBlank: 'EabKid o EabHmacKey no pueden estar en blanco'
+ErrOpenrestyInstall: "Instale primero OpenResty desde la tienda de aplicaciones"
 ErrOpenrestyNotFound: 'El modo HTTP requiere OpenResty'
 ApplySSLStart: 'Iniciando solicitud de certificado, dominio [{{ .domain }}] método de solicitud [{{ .type }}]'
 dnsAccount: 'DNS Automático'
@@ -675,7 +676,7 @@ TerminalAIRequestFailed: 'La solicitud de AI ha fallado: {{ .err }}'
 
 # puerta de enlace de IA
 ErrAIProxyServiceNotInstalled: 'El servicio {{ .name }} no está instalado'
-ErrAIProxyModelAccountNotFound: 'Cuenta de modelo {{ .id }} no encontrada'
+ErrAIProxyModelAccountNotFound: 'Servicio de modelo {{ .id }} no encontrado'
 ErrAIProxyModelMapRequired: 'Este campo es obligatorio.'
 ErrAIProxyModelMapInvalid: 'El mapeo de modelos debe ser un objeto JSON válido: {{ .err }}'
 ErrAIProxyModelMapEmpty: 'El mapeo de modelos no puede estar vacío'
@@ -686,6 +687,7 @@ AIProviderBailian: 'Alibaba Cloud Model Studio'
 AIProviderBailianCodingPlan: 'Alibaba Cloud Model Studio Coding Plan'
 AIProviderArk: 'Volcengine Ark'
 AIProviderArkCodingPlan: 'Volcengine Ark Coding Plan'
+AIProvider1PanelGateway: 'Puerta de enlace de IA de 1Panel'
 
 # Firewall
 ErrDockerIptablesChainUnavailable: 'No se encontró la cadena DOCKER-USER de Docker. Reinicie Docker y vuelva a intentarlo'
@@ -735,7 +737,7 @@ ErrSSHKeyMismatch: "Las claves pública y privada SSH no coinciden"
 # máquina virtual
 ErrVMNotFound: "La máquina virtual no existe"
 ErrVMAlreadyExists: "La máquina virtual ya existe"
-ErrVMCountLimit: "La edición Professional permite crear hasta {{ .limit }} máquinas virtuales. Elimina una máquina virtual existente o actualiza a Enterprise y vuelve a intentarlo."
+ErrVMCountLimit: "La edición actual permite crear hasta {{ .limit }} máquinas virtuales. Elimina una máquina virtual existente o cambia a una edición superior y vuelve a intentarlo."
 ErrVMImageAlreadyExists: "La imagen de la máquina virtual ya existe: {{ .detail }}"
 ErrVMStoragePathInUse: "La ruta del pool de almacenamiento ya está usada por [{{ .name }}]"
 ErrVMHelperNotFound: "No se encontró 1panel-kvm"
@@ -773,3 +775,48 @@ VMSnapshotRecoverTask: "Restaurar instantánea [{{ .snapshot }}] para la máquin
 VMSnapshotRecoverStep: "Restaurar instantánea de máquina virtual [{{ .snapshot }}]"
 VMSnapshotDeleteTask: "Eliminar instantánea [{{ .snapshot }}] de la máquina virtual [{{ .vm }}]"
 VMSnapshotDeleteStep: "Eliminar instantánea de máquina virtual [{{ .snapshot }}]"
+
+ErrCAUpload: "Upload a ZIP (up to 10 MB) containing a valid self-signed CA certificate ca.crt and its matching private key ca.key, with a supported RSA or EC algorithm."
+
+ErrCAImport: "Provide a valid self-signed root CA certificate and matching private key (up to 1 MB each), using a supported RSA or EC algorithm."
+
+# Built-in Feishu
+ErrFeishuConfig: "Corrija la configuración incompatible antes de continuar: {{ .detail }}"
+ErrFeishuConfigChanged: "La configuración cambió durante la transición. Recargue y reintente."
+ErrFeishuImageRequired: "Use una imagen que incluya Feishu."
+ErrFeishuAlreadySwitched: "Feishu ya utiliza el complemento integrado."
+ErrFeishuSwitchRequired: "Cambie primero al complemento integrado desde la página del canal Feishu."
+ErrFeishuManaged: "Gestione Feishu desde su canal; el complemento se actualiza con la imagen."
+ErrFeishuRestore: "Error al restaurar la configuración de Feishu: {{ .err }}"
+ErrFeishuActivation: "No se pudo iniciar el complemento Feishu integrado o la puerta de enlace."
+AgentFeishuSwitch: "Cambiar el complemento Feishu"
+AgentFeishuBackup: "Copia de configuración: {{ .name }}"
+AgentFeishuRestored: "Se restauró la configuración anterior."
+AgentFeishuProbeWarning: "Falló la comprobación de conexión de Feishu. Revise la red y las credenciales; se conservó el cambio."
+AgentFeishuVerifyMessages: "Activación local completada. Verifique el emparejamiento, chats, grupos, rutas de bots y transmisión en Feishu."
+
+ErrFeishuUpgradeConfirm: "Confirme las opciones de transición de Feishu en la página de actualización."
+
+ErrFeishuUpgradeBackup: "La actualización de compatibilidad de Feishu requiere una copia completa de la aplicación."
+
+ErrFeishuUpgradeMounts: "Estos montajes no permiten una copia y restauración completas. Use los montajes de datos estándar dentro del directorio de la aplicación."
+
+AgentFeishuRecoveryDisabled: "Puerta de enlace recuperada con Feishu desactivado; se conserva la copia de configuración original."
+
+ContainerUpgradeWaiting: "Waiting for a container upgrade execution slot"
+ContainerImageCheckUpdate: "Buscar actualizaciones de imágenes"
+ContainerImageCheckScope: "Comprobando los {{ .count }} contenedores de este nodo, sin aplicar paginación ni filtros"
+ContainerImageCheckItem: "Comprobando el contenedor {{ .name }}, imagen {{ .image }}"
+ContainerImageCheckFailed: "Error al comprobar el contenedor {{ .name }}: {{ .error }}; se conservan los resultados anteriores correspondientes a la imagen actual"
+ContainerImageCheckSkipped: "Se omite {{ .name }}: no es una imagen de Docker Hub con etiqueta, es una imagen local o tiene un digest fijo"
+ContainerImageCheckAvailable: "El contenedor {{ .name }} tiene una actualización: {{ .image }} → {{ .target }}"
+ContainerImageCheckCurrent: "No se encontraron actualizaciones para el contenedor {{ .name }}"
+ContainerImageCheckChanged: "El contenedor {{ .name }} se eliminó o su imagen cambió; no se guardó el resultado"
+ContainerImageCheckSummary: "Comprobación finalizada: comprobados {{ .checked }}, actualizables {{ .updates }}, fallidos {{ .failed }}, omitidos {{ .skipped }}"
+ContainerImageCheckFailures: "Falló la comprobación de {{ .count }} contenedores; consulte el registro de la tarea"
+
+ErrImageCheckProxyRequired: "Para comprobar actualizaciones de imágenes en el entorno actual, configura primero un servidor proxy."
+
+ErrPHPExtensionsConflict: "Ya existe una plantilla de extensiones PHP con este nombre y contenido diferente; no se ha sobrescrito"
+
+ErrModelTokenizerDirOverlap: "Los directorios de modelos y tokenizadores deben ser distintos y ninguno puede contener al otro"

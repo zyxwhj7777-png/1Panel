@@ -51,7 +51,7 @@
                             v-for="item in userDatabases(row).slice(0, 1)"
                             :key="row.username + '@' + row.host + item"
                             :content="item"
-                            placement="top"
+                            v-bind="TABLE_TOOLTIP_OPTIONS"
                         >
                             <el-tag size="small">{{ item }}</el-tag>
                         </el-tooltip>
@@ -66,7 +66,7 @@
                                     v-for="item in userDatabases(row)"
                                     :key="row.username + '@' + row.host + item"
                                     :content="item"
-                                    placement="top"
+                                    v-bind="TABLE_TOOLTIP_OPTIONS"
                                 >
                                     <el-tag size="small">{{ item }}</el-tag>
                                 </el-tooltip>
@@ -110,6 +110,7 @@
             </el-form-item>
             <el-form-item :label="$t('commons.login.password')" prop="password" :required="userDialogMode === 'create'">
                 <el-input type="password" clearable show-password v-model.trim="userForm.password" />
+                <span class="input-help">{{ $t('commons.rule.illegalChar') }}</span>
                 <span v-if="userDialogMode === 'edit'" class="input-help">
                     {{ $t('setting.passwordEmptyTip') }}
                 </span>
@@ -146,6 +147,7 @@
             </el-form-item>
             <el-form-item :label="$t('commons.login.password')" prop="password">
                 <el-input type="password" clearable show-password v-model.trim="supplementForm.password" />
+                <span class="input-help">{{ $t('commons.rule.illegalChar') }}</span>
                 <span class="input-help">{{ $t('database.supplementPasswordHelper') }}</span>
             </el-form-item>
         </el-form>
@@ -201,6 +203,7 @@
 </template>
 
 <script lang="ts" setup>
+import { TABLE_TOOLTIP_OPTIONS } from '@/components/table/shared';
 import { computed, reactive, ref } from 'vue';
 import Tooltip from '@/components/tooltip/index.vue';
 import i18n from '@/lang';
@@ -263,27 +266,8 @@ const supplementForm = reactive({
     password: '',
 });
 const supplementRules = reactive({
-    password: [Rules.requiredInput, Rules.noSpace, Rules.illegal],
+    password: [Rules.requiredInput, Rules.databasePassword],
 });
-const checkPassword = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
-    if (!value && userDialogMode.value === 'edit') {
-        callback();
-        return;
-    }
-    if (!value) {
-        callback(new Error(i18n.global.t('commons.rule.requiredInput')));
-        return;
-    }
-    if (value.indexOf(' ') !== -1) {
-        callback(new Error(i18n.global.t('setting.noSpace')));
-        return;
-    }
-    if (/[&|;'`$()><]/.test(value)) {
-        callback(new Error(i18n.global.t('commons.rule.illegalInput')));
-        return;
-    }
-    callback();
-};
 const checkUserHosts = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
     const hosts = value.split(',').map((item) => item.trim());
     if (hosts.length === 0 || hosts.some((item) => !item)) {
@@ -296,12 +280,13 @@ const checkUserHosts = (_rule: unknown, value: string, callback: (error?: Error)
     }
     callback();
 };
-const userRules = reactive({
+const userRules = computed(() => ({
     username: [Rules.requiredInput, Rules.name],
     permission: [Rules.requiredSelect],
     host: [Rules.requiredInput, Rules.noSpace, Rules.illegal, { validator: checkUserHosts, trigger: 'blur' }],
-    password: [{ validator: checkPassword, trigger: 'blur' }],
-});
+    password:
+        userDialogMode.value === 'create' ? [Rules.requiredInput, Rules.databasePassword] : [Rules.databasePassword],
+}));
 
 interface DialogProps {
     database: string;

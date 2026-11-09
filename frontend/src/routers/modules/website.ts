@@ -1,7 +1,7 @@
 import { Layout } from '@/routers/constant';
 
 const webSiteRouter = {
-    sort: 3,
+    sort: 4,
     path: '/websites',
     name: 'Website-Menu',
     component: Layout,
@@ -40,6 +40,42 @@ const webSiteRouter = {
             meta: {
                 icon: 'p-ssl-menu',
                 title: 'menu.ssl',
+                permission: 'website_cert_view',
+            },
+        },
+        {
+            path: '/websites/ssl/ca',
+            name: 'SSL-CA',
+            component: () => import('@/views/website/ssl/ca/index.vue'),
+            hidden: true,
+            meta: {
+                activeMenu: '/websites/ssl',
+                title: 'menu.ssl',
+                detail: 'ssl.selfSigned',
+                permission: 'website_cert_view',
+            },
+        },
+        {
+            path: '/websites/ssl/acme-account',
+            name: 'SSL-ACME',
+            component: () => import('@/views/website/ssl/acme-account/index.vue'),
+            hidden: true,
+            meta: {
+                activeMenu: '/websites/ssl',
+                title: 'menu.ssl',
+                detail: 'website.acmeAccountManage',
+                permission: 'website_cert_view',
+            },
+        },
+        {
+            path: '/websites/ssl/dns-account',
+            name: 'SSL-DNS',
+            component: () => import('@/views/website/ssl/dns-account/index.vue'),
+            hidden: true,
+            meta: {
+                activeMenu: '/websites/ssl',
+                title: 'menu.ssl',
+                detail: 'website.dnsAccountManage',
                 permission: 'website_cert_view',
             },
         },

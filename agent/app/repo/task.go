@@ -17,10 +17,11 @@ type TaskRepo struct {
 type ITaskRepo interface {
 	Save(ctx context.Context, task *model.Task) error
 	GetFirst(opts ...DBOption) (model.Task, error)
+	GetExecutingTask(scope string, resourceID uint) (model.Task, error)
 	Page(page, size int, opts ...DBOption) (int64, []model.Task, error)
 	Update(ctx context.Context, task *model.Task) error
-	UpdateRunningTaskToFailed() error
-	CountExecutingTask() (int64, error)
+	UpdateRunningTaskToFailed(opts ...DBOption) error
+	CountExecutingTask(opts ...DBOption) (int64, error)
 	Delete(opts ...DBOption) error
 	DeleteAll() error
 
@@ -29,6 +30,7 @@ type ITaskRepo interface {
 	WithResourceID(id uint) DBOption
 	WithOperate(taskOperate string) DBOption
 	WithByStatus(status string) DBOption
+	WithoutScopes(scopes ...string) DBOption
 }
 
 func NewITaskRepo() ITaskRepo {
@@ -97,6 +99,12 @@ func (t TaskRepo) GetFirst(opts ...DBOption) (model.Task, error) {
 	return task, nil
 }
 
+func (t TaskRepo) GetExecutingTask(scope string, resourceID uint) (model.Task, error) {
+	var item model.Task
+	err := getTaskDb(WithByType(scope), t.WithResourceID(resourceID), t.WithByStatus(constant.StatusExecuting)).Order("created_at DESC").Limit(1).Find(&item).Error
+	return item, err
+}
+
 func (t TaskRepo) Page(page, size int, opts ...DBOption) (int64, []model.Task, error) {
 	var tasks []model.Task
 	db := getTaskDb(opts...).Model(&model.Task{})
@@ -110,16 +118,28 @@ func (t TaskRepo) Update(ctx context.Context, task *model.Task) error {
 	return getTaskTx(ctx).Save(&task).Error
 }
 
-func (t TaskRepo) UpdateRunningTaskToFailed() error {
-	return getTaskDb(t.WithByStatus(constant.StatusExecuting)).Model(&model.Task{}).Updates(map[string]interface{}{
+func (t TaskRepo) UpdateRunningTaskToFailed(opts ...DBOption) error {
+	opts = append(opts, t.WithByStatus(constant.StatusExecuting))
+	return getTaskDb(opts...).Model(&model.Task{}).Updates(map[string]interface{}{
 		"status": constant.StatusFailed, "error_msg": constant.InterruptedMsg, "end_at": time.Now(),
 	}).Error
 }
 
-func (t TaskRepo) CountExecutingTask() (int64, error) {
+func (t TaskRepo) CountExecutingTask(opts ...DBOption) (int64, error) {
 	var count int64
-	err := getTaskDb(t.WithByStatus(constant.StatusExecuting)).Model(&model.Task{}).Count(&count).Error
+	opts = append(opts, t.WithByStatus(constant.StatusExecuting))
+	err := getTaskDb(opts...).Model(&model.Task{}).Count(&count).Error
 	return count, err
+}
+
+func (t TaskRepo) WithoutScopes(scopes ...string) DBOption {
+	excluded := append([]string(nil), scopes...)
+	return func(db *gorm.DB) *gorm.DB {
+		if len(excluded) == 0 {
+			return db
+		}
+		return db.Where("type IS NULL OR type NOT IN ?", excluded)
+	}
 }
 
 func (t TaskRepo) Delete(opts ...DBOption) error {

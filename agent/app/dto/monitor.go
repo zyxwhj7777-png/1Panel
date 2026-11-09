@@ -1,11 +1,6 @@
 package dto
 
-import (
-	"encoding/json"
-	"time"
-
-	"github.com/1Panel-dev/1Panel/agent/app/model"
-)
+import "time"
 
 type MonitorSearch struct {
 	Param     string    `json:"param" validate:"required,oneof=all cpu memory load io network"`
@@ -31,21 +26,18 @@ type Process struct {
 }
 
 type MonitorSetting struct {
-	GPUMonitorStatus     string `json:"gpuMonitorStatus"`
-	GPUMonitorStoreDays  string `json:"gpuMonitorStoreDays"`
-	GPUMonitorInterval   string `json:"gpuMonitorInterval"`
-	VLLMMonitorStatus    string `json:"vllmMonitorStatus"`
-	VLLMMonitorStoreDays string `json:"vllmMonitorStoreDays"`
-	VLLMMonitorInterval  string `json:"vllmMonitorInterval"`
-	MonitorStatus        string `json:"monitorStatus"`
-	MonitorStoreDays     string `json:"monitorStoreDays"`
-	MonitorInterval      string `json:"monitorInterval"`
-	DefaultNetwork       string `json:"defaultNetwork"`
-	DefaultIO            string `json:"defaultIO"`
+	GPUMonitorStatus    string `json:"gpuMonitorStatus"`
+	GPUMonitorStoreDays string `json:"gpuMonitorStoreDays"`
+	GPUMonitorInterval  string `json:"gpuMonitorInterval"`
+	MonitorStatus       string `json:"monitorStatus"`
+	MonitorStoreDays    string `json:"monitorStoreDays"`
+	MonitorInterval     string `json:"monitorInterval"`
+	DefaultNetwork      string `json:"defaultNetwork"`
+	DefaultIO           string `json:"defaultIO"`
 }
 
 type MonitorSettingUpdate struct {
-	Key   string `json:"key" validate:"required,oneof=MonitorStatus MonitorStoreDays MonitorInterval GPUMonitorStatus GPUMonitorStoreDays GPUMonitorInterval VLLMMonitorStatus VLLMMonitorStoreDays VLLMMonitorInterval DefaultNetwork DefaultIO"`
+	Key   string `json:"key" validate:"required,oneof=MonitorStatus MonitorStoreDays MonitorInterval GPUMonitorStatus GPUMonitorStoreDays GPUMonitorInterval DefaultNetwork DefaultIO"`
 	Value string `json:"value"`
 }
 
@@ -56,17 +48,18 @@ type MonitorGPUOptions struct {
 	Options   []string       `json:"options"`
 }
 type GPUChartHide struct {
-	DeviceID    string `json:"deviceID"`
-	Legacy      bool   `json:"legacy"`
-	ProductName string `json:"productName"`
-	Type        string `json:"type"`
-	Process     bool   `json:"process"`
-	GPU         bool   `json:"gpu"`
-	Memory      bool   `json:"memory"`
-	Power       bool   `json:"power"`
-	PowerLimit  bool   `json:"powerLimit"`
-	Temperature bool   `json:"temperature"`
-	Speed       bool   `json:"speed"`
+	SharedMemory bool   `json:"sharedMemory"`
+	DeviceID     string `json:"deviceID"`
+	Legacy       bool   `json:"legacy"`
+	ProductName  string `json:"productName"`
+	Type         string `json:"type"`
+	Process      bool   `json:"process"`
+	GPU          bool   `json:"gpu"`
+	Memory       bool   `json:"memory"`
+	Power        bool   `json:"power"`
+	PowerLimit   bool   `json:"powerLimit"`
+	Temperature  bool   `json:"temperature"`
+	Speed        bool   `json:"speed"`
 }
 type MonitorGPUSearch struct {
 	Aggregation string    `json:"aggregation" validate:"omitempty,oneof=avg max"`
@@ -125,33 +118,6 @@ type GPUProcess struct {
 	Type        string `json:"type"`
 	ProcessName string `json:"processName"`
 	UsedMemory  string `json:"usedMemory"`
-}
-
-type MonitorVLLMSearch struct {
-	Group        string    `json:"group" validate:"omitempty,oneof=overview latency requests"`
-	AppInstallID uint      `json:"appInstallID" validate:"required"`
-	StartTime    time.Time `json:"startTime" validate:"required"`
-	EndTime      time.Time `json:"endTime" validate:"required"`
-	Aggregation  string    `json:"aggregation" validate:"omitempty,oneof=avg max"`
-}
-
-type MonitorVLLMData struct {
-	SampleCount   int64               `json:"sampleCount"`
-	BucketSeconds int64               `json:"bucketSeconds"`
-	Points        []model.MonitorVLLM `json:"points"`
-}
-
-type MonitorVLLMCurrent struct {
-	AppInstallID uint `json:"appInstallID" validate:"required"`
-}
-
-type MonitorVLLMCurrentData struct {
-	model.MonitorVLLM
-	Metrics map[string]json.RawMessage `json:"metrics,omitempty"`
-}
-
-type MonitorVLLMClean struct {
-	AppInstallID uint `json:"appInstallID" validate:"required"`
 }
 
 type MonitorClean struct {

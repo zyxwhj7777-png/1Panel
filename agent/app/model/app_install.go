@@ -17,6 +17,7 @@ type AppInstall struct {
 	Param         string `json:"param"`
 	Env           string `json:"env"`
 	DockerCompose string `json:"dockerCompose" `
+	TaskID        string `json:"taskID" gorm:"-"`
 	Status        string `json:"status" gorm:"not null"`
 	Description   string `json:"description"`
 	Message       string `json:"message"`
@@ -27,6 +28,10 @@ type AppInstall struct {
 	WebUI         string `json:"webUI"`
 	Favorite      bool   `json:"favorite"`
 	SortOrder     int    `json:"sortOrder" gorm:"default:0"`
+
+	SyncModelAccount        bool   `json:"syncModelAccount"`
+	ModelAccountBaseURLType string `json:"modelAccountBaseURLType"`
+	ModelAccountBaseURL     string `json:"modelAccountBaseURL"`
 
 	App App `json:"app" gorm:"-:migration"`
 }

@@ -31,6 +31,7 @@ type IAppInstallRepo interface {
 	GetFirst(opts ...DBOption) (model.AppInstall, error)
 	Create(ctx context.Context, install *model.AppInstall) error
 	Save(ctx context.Context, install *model.AppInstall) error
+	UpdateStatus(install *model.AppInstall) error
 	DeleteBy(opts ...DBOption) error
 	Delete(ctx context.Context, install model.AppInstall) error
 	Page(page, size int, opts ...DBOption) (int64, []model.AppInstall, error)
@@ -38,10 +39,16 @@ type IAppInstallRepo interface {
 	LoadBaseInfo(key string, name string) (*RootInfo, error)
 	LoadInstallAppByKeyAndName(key string, name string) (*model.AppInstall, error)
 	GetFirstByCtx(ctx context.Context, opts ...DBOption) (model.AppInstall, error)
+	GetSnapshot(ctx context.Context, id uint) (model.AppInstall, error)
 }
 
 func NewIAppInstallRepo() IAppInstallRepo {
 	return &AppInstallRepo{}
+}
+
+func (a *AppInstallRepo) UpdateStatus(install *model.AppInstall) error {
+	return getDb().Model(&model.AppInstall{}).Where("id = ? AND updated_at = ?", install.ID, install.UpdatedAt).
+		Updates(map[string]interface{}{"status": install.Status, "message": install.Message, "container_name": install.ContainerName}).Error
 }
 
 func (a *AppInstallRepo) WithDetailIdsIn(detailIds []uint) DBOption {
@@ -128,6 +135,12 @@ func (a *AppInstallRepo) GetFirstByCtx(ctx context.Context, opts ...DBOption) (m
 	var install model.AppInstall
 	db := getTx(ctx, opts...).Model(&model.AppInstall{})
 	err := db.Preload("App").First(&install).Error
+	return install, err
+}
+
+func (a *AppInstallRepo) GetSnapshot(ctx context.Context, id uint) (model.AppInstall, error) {
+	var install model.AppInstall
+	err := getTx(ctx).WithContext(ctx).Preload("App").Where("id = ?", id).First(&install).Error
 	return install, err
 }
 

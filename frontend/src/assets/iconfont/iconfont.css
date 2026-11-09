@@ -1,9 +1,9 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4776196 */
-  src: url('iconfont.woff2?t=1786526991803') format('woff2'),
-       url('iconfont.woff?t=1786526991803') format('woff'),
-       url('iconfont.ttf?t=1786526991803') format('truetype'),
-       url('iconfont.svg?t=1786526991803#iconfont') format('svg');
+  src: url('iconfont.woff2?t=1793947831341') format('woff2'),
+       url('iconfont.woff?t=1793947831341') format('woff'),
+       url('iconfont.ttf?t=1793947831341') format('truetype'),
+       url('iconfont.svg?t=1793947831341#iconfont') format('svg');
 }
 
 .iconfont {
@@ -12,6 +12,18 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.p-modelscope1:before {
+  content: "\e685";
+}
+
+.p-xuniji:before {
+  content: "\e62f";
+}
+
+.p-huggingface:before {
+  content: "\e7d1";
 }
 
 .p-shuju:before {

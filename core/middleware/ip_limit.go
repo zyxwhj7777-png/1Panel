@@ -11,8 +11,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func WhiteAllow() gin.HandlerFunc {
+type SourcePolicy struct {
+	Bypass  func(*gin.Context) bool
+	Resolve func(*gin.Context, string) (clientIP string, allowed bool)
+}
+
+func WhiteAllow(policies ...SourcePolicy) gin.HandlerFunc {
+	policies = append([]SourcePolicy(nil), policies...)
 	return func(c *gin.Context) {
+		for _, policy := range policies {
+			if policy.Bypass == nil {
+				continue
+			}
+			allowed := policy.Bypass(c)
+			if c.IsAborted() {
+				return
+			}
+			if allowed {
+				c.Next()
+				return
+			}
+		}
 		tokenString := c.GetHeader("X-Panel-Local-Token")
 		remoteIP := common.GetRealClientIP(c)
 		if isLocalSyncRequest(c.Request.URL.Path, remoteIP, tokenString) {
@@ -27,7 +46,26 @@ func WhiteAllow() gin.HandlerFunc {
 			helper.InternalServer(c, err)
 			return
 		}
-		clientIP := common.ResolveClientIP(c, trustedProxies)
+		clientIP := ""
+		for _, policy := range policies {
+			if policy.Resolve == nil {
+				continue
+			}
+			resolved, allowed := policy.Resolve(c, trustedProxies)
+			if c.IsAborted() {
+				return
+			}
+			if resolved != "" {
+				clientIP = resolved
+			}
+			if allowed {
+				c.Next()
+				return
+			}
+		}
+		if clientIP == "" {
+			clientIP = common.ResolveClientIP(c, trustedProxies)
+		}
 
 		allowIPs, err := settingRepo.GetValueByKey("AllowIPs")
 		if err != nil {
@@ -60,7 +98,7 @@ func isLocalSyncRequest(reqPath, clientIP, token string) bool {
 	}
 
 	switch reqPath {
-	case "/api/v2/core/xpack/sync/ssl":
+	case "/api/v2/core/xpack/sync/ssl", "/api/v2/core/xpack/sync/php/extensions":
 		return token != ""
 	case "/api/v2/core/settings/ssl/reload":
 		return token != ""

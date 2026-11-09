@@ -21,9 +21,11 @@ import (
 	"github.com/1Panel-dev/1Panel/agent/constant"
 	"github.com/1Panel-dev/1Panel/agent/global"
 	"github.com/1Panel-dev/1Panel/agent/i18n"
+	"github.com/1Panel-dev/1Panel/agent/utils/ai_tools/vllm"
 	"github.com/1Panel-dev/1Panel/agent/utils/common"
 	"github.com/1Panel-dev/1Panel/agent/utils/compose"
 	"github.com/1Panel-dev/1Panel/agent/utils/docker"
+	"github.com/1Panel-dev/1Panel/agent/utils/env"
 	"github.com/1Panel-dev/1Panel/agent/utils/files"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
@@ -60,10 +62,16 @@ type upgradeFileSnapshot struct {
 }
 
 type appUpgradeContext struct {
-	req       request.AppInstallUpgrade
-	original  model.AppInstall
-	candidate model.AppInstall
-	detail    model.AppDetail
+	openclawOriginal []byte
+	feishuOriginal   []byte
+	feishuImage      string
+	feishuOldImage   string
+	feishuEnabled    bool
+	feishuLockPath   string
+	req              request.AppInstallUpgrade
+	original         model.AppInstall
+	candidate        model.AppInstall
+	detail           model.AppDetail
 
 	phase         appUpgradePhase
 	stopAttempted bool
@@ -86,11 +94,8 @@ func upgradeInstall(req request.AppInstallUpgrade) error {
 	if err != nil {
 		return err
 	}
-	if install.Status == constant.StatusUpgrading {
+	if install.Status == constant.StatusUpgrading && install.App.Key != "ollama" && install.App.Key != "vllm" {
 		return buserr.New("TaskIsExecuting")
-	}
-	if err = task.CheckScopeTaskIsExecuting(task.TaskScopeApp, install.ID); err != nil {
-		return err
 	}
 	if _, loaded := appUpgradeLocks.LoadOrStore(install.ID, struct{}{}); loaded {
 		return buserr.New("TaskIsExecuting")
@@ -101,6 +106,22 @@ func upgradeInstall(req request.AppInstallUpgrade) error {
 			appUpgradeLocks.Delete(install.ID)
 		}
 	}()
+	if err = task.CheckScopeTaskIsExecuting(task.TaskScopeApp, install.ID); err != nil {
+		return err
+	}
+
+	feishuLockPath := ""
+	if install.App.Key == constant.AppOpenclaw {
+		feishuLockPath = path.Join(install.GetPath(), "data/conf/openclaw.json")
+		if _, busy := feishuSwitches.LoadOrStore(feishuLockPath, true); busy {
+			return buserr.New("TaskIsExecuting")
+		}
+		defer func() {
+			if releaseLock {
+				feishuSwitches.Delete(feishuLockPath)
+			}
+		}()
+	}
 
 	detail, err := appDetailRepo.GetFirst(repo.WithByID(req.DetailID))
 	if err != nil {
@@ -117,8 +138,8 @@ func upgradeInstall(req request.AppInstallUpgrade) error {
 	if err = checkVllmVersionAccess(install.App.Key, detail.Version); err != nil {
 		return err
 	}
-	if install.App.Key == vllmAppKeyForUpgrade && !isVllmUpgradeVersionAllowed(install.Version, detail.Version, loadVllmImageFromEnv(install.Env)) {
-		return errors.New("vLLM can only upgrade within the same image type")
+	if install.App.Key == vllmAppKeyForUpgrade && !isVllmUpgradeCandidate(install.Version, detail.Version, loadVllmImageFromEnv(install.Env)) {
+		return errors.New("vLLM upgrade version is not supported")
 	}
 	if install.Version == detail.Version {
 		return errors.New("two version is same")
@@ -129,6 +150,7 @@ func upgradeInstall(req request.AppInstallUpgrade) error {
 		return err
 	}
 	ctx := &appUpgradeContext{
+		feishuLockPath:   feishuLockPath,
 		req:              req,
 		original:         install,
 		candidate:        install,
@@ -165,7 +187,7 @@ func upgradeInstall(req request.AppInstallUpgrade) error {
 		if ctx.rollbackErr != nil {
 			taskErr = fmt.Errorf("%w; %s: %v", taskErr, i18n.GetMsgByKey("UpgradeRollbackFailed"), ctx.rollbackErr)
 			upgradeTask.Task.ErrorMsg = taskErr.Error()
-			_ = repo.NewITaskRepo().Update(context.Background(), upgradeTask.Task)
+			_ = taskRepo.Update(context.Background(), upgradeTask.Task)
 		}
 		if !ctx.stopAttempted || ctx.rollbackErr == nil {
 			restored := ctx.original
@@ -196,8 +218,9 @@ func (u *appUpgradeContext) prepare(t *task.Task) error {
 		if err != nil {
 			return err
 		}
-		u.detail.DockerCompose = string(composeContent)
-		_ = appDetailRepo.Update(context.Background(), u.detail)
+		if err := cacheAppDetailCompose(&u.detail, composeContent); err != nil {
+			return err
+		}
 	}
 	if strings.TrimSpace(u.detail.DockerCompose) == "" && strings.TrimSpace(u.req.DockerCompose) == "" {
 		return buserr.WithName("ErrFileNotFound", "docker-compose.yml")
@@ -218,8 +241,22 @@ func (u *appUpgradeContext) prepare(t *task.Task) error {
 	if err = copyUpgradeStageFile(u.original.GetPath(), u.stageDir, ".env"); err != nil {
 		return err
 	}
+	if u.original.App.Key == vllmAppKeyForUpgrade && vllm.IsGB10Version(u.original.Version) {
+		for _, directory := range []string{u.original.GetPath(), u.stageDir} {
+			for _, script := range []string{"start.sh", "stop.sh"} {
+				scriptPath := path.Join(directory, "scripts", script)
+				if !fileOp.Stat(scriptPath) {
+					return buserr.WithName("ErrFileNotFound", scriptPath)
+				}
+			}
+		}
+	}
 	if u.original.App.Key == constant.AppOpenclaw {
 		if err = copyUpgradeStageFile(u.original.GetPath(), u.stageDir, path.Join("data", "conf", "openclaw.json")); err != nil {
+			return err
+		}
+		u.openclawOriginal, err = os.ReadFile(path.Join(u.stageDir, "data/conf/openclaw.json"))
+		if err != nil {
 			return err
 		}
 	}
@@ -246,6 +283,9 @@ func (u *appUpgradeContext) prepare(t *task.Task) error {
 		}
 		image := buildVllmUpgradeImage(loadVllmImageFromEnv(stagedInstall.Env), u.original.Version, u.detail.Version)
 		envs[vllmImageEnvKey] = image
+		if vllm.IsGB10Version(u.detail.Version) {
+			envs["DSPARK_VLLM_IMAGE"] = image
+		}
 		paramBytes, marshalErr := json.Marshal(envs)
 		if marshalErr != nil {
 			return marshalErr
@@ -330,6 +370,9 @@ func (u *appUpgradeContext) prepare(t *task.Task) error {
 	if u.original.App.Resource == constant.AppResourceRemote {
 		go RequestDownloadCallBack(u.detail.DownloadCallBackUrl)
 	}
+	if err = u.prepareFeishuUpgrade(); err != nil {
+		return err
+	}
 	u.phase = appUpgradePrepared
 	return nil
 }
@@ -376,17 +419,31 @@ func (u *appUpgradeContext) prepareOpenresty(t *task.Task, stagedInstall model.A
 }
 
 func (u *appUpgradeContext) cutover(t *task.Task) error {
+	if err := resetLocalModelAccountVerification(u.original); err != nil {
+		return err
+	}
+	useGB10Lifecycle := u.original.App.Key == vllmAppKeyForUpgrade && vllm.IsGB10Version(u.original.Version)
 	u.stopAttempted = true
 	t.LogStart(i18n.GetMsgByKey("UpgradeStop"))
-	if out, err := compose.Stop(u.original.GetComposePath()); err != nil {
-		if out != "" {
-			err = fmt.Errorf("%s: %w", out, err)
+	var stopErr error
+	if useGB10Lifecycle {
+		stopErr = runScript(t, &u.original, "stop")
+	} else {
+		out, err := compose.Stop(u.original.GetComposePath())
+		stopErr = err
+		if err != nil && out != "" {
+			stopErr = fmt.Errorf("%s: %w", out, err)
 		}
-		t.LogFailedWithErr(i18n.GetMsgByKey("UpgradeStop"), err)
-		return err
+	}
+	if stopErr != nil {
+		t.LogFailedWithErr(i18n.GetMsgByKey("UpgradeStop"), stopErr)
+		return stopErr
 	}
 	t.LogSuccess(i18n.GetMsgByKey("UpgradeStop"))
 	u.phase = appUpgradeStopped
+	if err := u.checkFeishuUpgradeSource(); err != nil {
+		return err
+	}
 
 	var err error
 	if u.original.App.Key == constant.AppOpenresty {
@@ -412,11 +469,13 @@ func (u *appUpgradeContext) cutover(t *task.Task) error {
 	}
 
 	u.downAttempted = true
-	if out, downErr := compose.Down(u.original.GetComposePath()); downErr != nil {
-		if out != "" {
-			downErr = fmt.Errorf("%s: %w", out, downErr)
+	if !useGB10Lifecycle {
+		if out, downErr := compose.Down(u.original.GetComposePath()); downErr != nil {
+			if out != "" {
+				downErr = fmt.Errorf("%s: %w", out, downErr)
+			}
+			return downErr
 		}
-		return downErr
 	}
 	u.phase = appUpgradeDown
 
@@ -436,12 +495,19 @@ func (u *appUpgradeContext) cutover(t *task.Task) error {
 
 	logStr := fmt.Sprintf("%s %s", i18n.GetMsgByKey("Run"), i18n.GetMsgByKey("App"))
 	t.LogStart(logStr)
-	if out, upErr := compose.UpWithoutBuild(u.original.GetComposePath()); upErr != nil {
-		if out != "" {
-			upErr = fmt.Errorf("%s: %w", out, upErr)
+	var startErr error
+	if useGB10Lifecycle {
+		startErr = runScript(t, &u.candidate, "start")
+	} else {
+		out, err := compose.UpWithoutBuild(u.original.GetComposePath())
+		startErr = err
+		if err != nil && out != "" {
+			startErr = fmt.Errorf("%s: %w", out, err)
 		}
-		t.LogFailedWithErr(logStr, upErr)
-		return upErr
+	}
+	if startErr != nil {
+		t.LogFailedWithErr(logStr, startErr)
+		return startErr
 	}
 	t.LogSuccess(logStr)
 	u.phase = appUpgradeStarted
@@ -453,6 +519,9 @@ func (u *appUpgradeContext) cutover(t *task.Task) error {
 		u.candidate.ContainerName = strings.Join(containerNames, ",")
 	} else {
 		t.Log("WARNING: no containers found for the upgraded application")
+	}
+	if err = u.verifyFeishuUpgrade(t); err != nil {
+		return err
 	}
 	u.candidate.Status = constant.StatusRunning
 	u.candidate.Message = ""
@@ -556,6 +625,9 @@ func (u *appUpgradeContext) rollback(t *task.Task) (rollbackErr error) {
 			t.LogSuccess(logStr)
 		}
 	}()
+	if u.original.App.Key == vllmAppKeyForUpgrade && vllm.IsGB10Version(u.original.Version) {
+		return u.rollbackVllmGB10(t)
+	}
 	if !u.downAttempted {
 		if out, err := compose.Operate(u.original.GetComposePath(), "start"); err != nil {
 			if out != "" {
@@ -579,7 +651,33 @@ func (u *appUpgradeContext) rollback(t *task.Task) (rollbackErr error) {
 		if out != "" {
 			err = fmt.Errorf("%s: %w", out, err)
 		}
+		if u.feishuOriginal != nil {
+			return err
+		}
 		rollbackErr = err
+	}
+	if u.feishuOriginal != nil {
+		if u.backupFile == "" {
+			return buserr.New("ErrFeishuUpgradeBackup")
+		}
+		if err := u.restoreManagedFiles(); err != nil {
+			return err
+		}
+		if err := handleAppRecover(&u.original, t, u.backupFile, true, "", "", false); err != nil {
+			return err
+		}
+		if err := pinFeishuRollbackImage(u.original.GetComposePath(), u.feishuOldImage); err != nil {
+			return err
+		}
+		restoredCompose, err := os.ReadFile(u.original.GetComposePath())
+		if err != nil {
+			return err
+		}
+		u.original.DockerCompose = string(restoredCompose)
+		if _, err := compose.UpWithoutBuild(u.original.GetComposePath()); err != nil {
+			return err
+		}
+		return u.finishRollback()
 	}
 	if u.backupFile != "" {
 		_ = u.restoreManagedFiles()
@@ -601,7 +699,37 @@ func (u *appUpgradeContext) rollback(t *task.Task) (rollbackErr error) {
 	return errors.Join(rollbackErr, u.finishRollback())
 }
 
+func (u *appUpgradeContext) rollbackVllmGB10(t *task.Task) error {
+	current := u.original
+	if u.phase >= appUpgradeMutated {
+		current = u.candidate
+	}
+	stopErr := runScript(t, &current, "stop")
+	if u.phase >= appUpgradeMutated {
+		if err := u.restoreManagedFiles(); err != nil {
+			return errors.Join(stopErr, err)
+		}
+		if u.backupFile != "" {
+			if err := handleAppRecover(&u.original, t, u.backupFile, true, "", "", false); err != nil {
+				return errors.Join(stopErr, err)
+			}
+		}
+	}
+	if err := runScript(t, &u.original, "start"); err != nil {
+		return errors.Join(stopErr, err)
+	}
+	if stopErr != nil {
+		return stopErr
+	}
+	return u.finishRollback()
+}
+
 func (u *appUpgradeContext) finishRollback() error {
+	if u.feishuOriginal != nil {
+		if err := waitOpenclawReady(u.original.ContainerName); err != nil {
+			return err
+		}
+	}
 	restored := u.original
 	if err := appInstallRepo.Save(context.Background(), &restored); err != nil {
 		return err
@@ -643,6 +771,13 @@ func (u *appUpgradeContext) deleteOldImages(t *task.Task) {
 }
 
 func (u *appUpgradeContext) cleanup() {
+	if u.feishuLockPath != "" {
+		feishuSwitches.Delete(u.feishuLockPath)
+	}
+	if u.rollbackErr != nil && (u.feishuOriginal != nil ||
+		(u.original.App.Key == vllmAppKeyForUpgrade && vllm.IsGB10Version(u.original.Version))) {
+		return
+	}
 	if u.snapshot != nil {
 		u.snapshot.Cleanup()
 	}
@@ -732,7 +867,7 @@ func renderUpgradeEnv(install *model.AppInstall, original []byte) ([]byte, error
 	if err := json.Unmarshal([]byte(install.Env), &envs); err != nil {
 		return nil, err
 	}
-	handleMap(envs, params)
+	MergeAppEnvironment(envs, params)
 	if install.App.Key == "openlist" {
 		// The upgrade script updates this too late for the pre-pull phase.
 		image := "openlistteam/openlist:v" + strings.TrimPrefix(install.Version, "v")
@@ -771,7 +906,7 @@ func renderUpgradeEnv(install *model.AppInstall, original []byte) ([]byte, error
 		}
 		install.Env = string(content)
 	}
-	content, err := godotenv.Marshal(params)
+	content, err := env.MarshalWithOrder(params, nil)
 	if err != nil {
 		return nil, err
 	}

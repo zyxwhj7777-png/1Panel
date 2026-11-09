@@ -3,8 +3,6 @@ package v2
 import (
 	"encoding/base64"
 	"net/http"
-	"os"
-	"path"
 
 	"github.com/1Panel-dev/1Panel/core/app/api/v2/helper"
 	appauth "github.com/1Panel-dev/1Panel/core/app/auth"
@@ -63,7 +61,7 @@ func (b *BaseApi) Login(c *gin.Context) {
 
 	user, msgKey, err := xpack.AuthProvider.Login(c, req, string(entrance))
 	if user == nil || user.MfaStatus != constant.StatusEnable {
-		go saveLoginLogs(c, req.Name, wrapLoginErr(msgKey, err))
+		go saveLoginLogs(snapshotLoginLog(c, req.Name, wrapLoginErr(msgKey, err)))
 	}
 	if msgKey == "ErrAuth" || msgKey == "ErrEntrance" || msgKey == "ErrNoneNode" {
 		if msgKey == "ErrAuth" {
@@ -110,7 +108,7 @@ func (b *BaseApi) MFALogin(c *gin.Context) {
 	}
 
 	user, msgKey, err := xpack.AuthProvider.MFALogin(c, req, string(entrance))
-	go saveLoginLogs(c, loginLogUserName(user, req.SessionID), wrapLoginErr(msgKey, err))
+	go saveLoginLogs(snapshotLoginLog(c, loginLogUserName(user, req.SessionID), wrapLoginErr(msgKey, err)))
 	if msgKey == "ErrNoneNode" {
 		helper.BadAuth(c, msgKey, err)
 		return
@@ -169,7 +167,7 @@ func (b *BaseApi) PasskeyFinishLogin(c *gin.Context) {
 	sessionID := c.GetHeader("Passkey-Session")
 	entrance := loadEntranceFromRequest(c)
 	user, msgKey, err := xpack.AuthProvider.PasskeyFinishLogin(c, sessionID, entrance)
-	go saveLoginLogs(c, loginLogUserName(user, ""), wrapLoginErr(msgKey, err))
+	go saveLoginLogs(snapshotLoginLog(c, loginLogUserName(user, ""), wrapLoginErr(msgKey, err)))
 	if msgKey == "ErrAuth" || msgKey == "ErrEntrance" || msgKey == "ErrNoneNode" {
 		if msgKey == "ErrAuth" {
 			global.IPTracker.SetNeedCaptcha(common.GetRealClientIP(c))
@@ -226,26 +224,6 @@ func (b *BaseApi) Captcha(c *gin.Context) {
 }
 
 // @Tags Auth
-// @Summary Get welcome page
-// @Success 200
-// @Security ApiKeyAuth
-// @Security Timestamp
-// @Router /core/auth/welcome [get]
-func (b *BaseApi) GetWelcomePage(c *gin.Context) {
-	count, _, _ := logService.PageLoginLog(c, dto.SearchLgLogWithPage{PageInfo: dto.PageInfo{Page: 1, PageSize: 10}})
-	if count != 1 {
-		helper.Success(c)
-		return
-	}
-	file, err := os.ReadFile(path.Join(global.CONF.Base.InstallDir, "1panel/welcome/index.html"))
-	if err != nil {
-		helper.Success(c)
-		return
-	}
-	helper.SuccessWithData(c, string(file))
-}
-
-// @Tags Auth
 // @Summary Get Setting For Login
 // @Success 200 {object} dto.LoginSetting
 // @Router /core/auth/setting [get]
@@ -260,7 +238,6 @@ func (b *BaseApi) GetLoginSetting(c *gin.Context) {
 	res := &dto.LoginSetting{
 		IsDemo:        global.CONF.Base.IsDemo,
 		IsIntl:        global.CONF.Base.Edition == "intl",
-		IsFxplay:      global.CONF.Base.IsFxplay,
 		IsOffline:     global.CONF.Base.IsOffline,
 		IsEnterprise:  global.CONF.Base.IsEnterprise,
 		Language:      settingInfo.Language,
@@ -417,16 +394,22 @@ func (b *BaseApi) MFAClose(c *gin.Context) {
 }
 
 // @Tags Auth
-// @Summary generate api key
+// @Summary Generate or reset the legacy API key
+// @Description Requires a panel login session and CSRF token. API Key authentication is not supported. This replaces the current account's legacy secret; existing clients using the previous secret must be updated. Independent API keys are unaffected.
 // @Accept json
-// @Success 200 {string} key
-// @Security ApiKeyAuth
-// @Security Timestamp
+// @Produce json
+// @Success 200 {object} dto.Response{data=string} "code=200 with the new secret; authentication and business errors use envelope code 400, 401 or 500"
+// @Header 200 {string} Cache-Control "no-store"
+// @Security PanelSession || CSRFToken
 // @Router /core/auth/api/generate [post]
 // @x-panel-log {"bodyKeys":[],"paramKeys":[],"BeforeFunctions":[],"formatZH":"生成 API 接口密钥","formatEN":"generate api key"}
 func (b *BaseApi) GenerateApiKey(c *gin.Context) {
 	if _, err := appauth.RequireAPIKeySession(c); err != nil {
 		helper.BadAuth(c, "ErrApiConfigDisable", nil)
+		return
+	}
+	if err := appauth.RequireUnexpiredPassword(c, xpack.AuthProvider); err != nil {
+		apiKeyError(c, err)
 		return
 	}
 	apiKey, err := xpack.AuthProvider.GenerateApiKey(c)
@@ -440,17 +423,22 @@ func (b *BaseApi) GenerateApiKey(c *gin.Context) {
 }
 
 // @Tags Auth
-// @Summary Update api config
+// @Summary Update the legacy API key configuration
+// @Description Requires a panel login session and CSRF token. API Key authentication is not supported. This updates only the current account's legacy API configuration.
 // @Accept json
+// @Produce json
 // @Param request body dto.ApiInterfaceConfig true "request"
-// @Success 200
-// @Security ApiKeyAuth
-// @Security Timestamp
+// @Success 200 {object} dto.Response "code=200 on success; authentication and business errors use envelope code 400, 401 or 500"
+// @Security PanelSession || CSRFToken
 // @Router /core/auth/api/update [post]
 // @x-panel-log {"bodyKeys":["ipWhiteList","apiTrustedProxies"],"paramKeys":[],"BeforeFunctions":[],"formatZH":"更新 API 接口配置 => IP 白名单: [ipWhiteList], API 可信代理: [apiTrustedProxies]","formatEN":"update api config => IP Allowlist: [ipWhiteList], API Trusted Proxies: [apiTrustedProxies]"}
 func (b *BaseApi) UpdateApiConfig(c *gin.Context) {
 	if _, err := appauth.RequireAPIKeySession(c); err != nil {
 		helper.BadAuth(c, "ErrApiConfigDisable", nil)
+		return
+	}
+	if err := appauth.RequireUnexpiredPassword(c, xpack.AuthProvider); err != nil {
+		apiKeyError(c, err)
 		return
 	}
 	var req dto.ApiInterfaceConfig
@@ -485,6 +473,10 @@ func (b *BaseApi) GetCurrentUser(c *gin.Context) {
 		return
 	}
 	if c.GetBool("API_AUTH") || appauth.HasAPICredentials(c) {
+		userInfo.ApiKey = ""
+	} else if expired, policyErr := appauth.IsPasswordExpired(c, xpack.AuthProvider); expired || policyErr != nil {
+		// Bootstrap must remain usable for password recovery. Policy failures
+		// never disclose a reusable legacy secret through this read endpoint.
 		userInfo.ApiKey = ""
 	}
 	c.Header("Cache-Control", "no-store")
@@ -533,7 +525,10 @@ func (b *BaseApi) ResetPassword(c *gin.Context) {
 	helper.Success(c)
 }
 
-func saveLoginLogs(c *gin.Context, userName string, err error) {
+// Capture request and authentication values synchronously. Arguments to the go
+// statement are evaluated before it starts; the DB writer never keeps a Gin
+// context that may already have been reset for another request.
+func snapshotLoginLog(c *gin.Context, userName string, err error) model.LoginLog {
 	var logs model.LoginLog
 	if err != nil {
 		logs.Status = constant.StatusFailed
@@ -541,9 +536,13 @@ func saveLoginLogs(c *gin.Context, userName string, err error) {
 	} else {
 		logs.Status = constant.StatusSuccess
 	}
-	logs.IP = c.ClientIP()
+	logs.IP = common.AuditClientIP(c)
 	logs.User = userName
 	logs.Agent = c.GetHeader("User-Agent")
+	return logs
+}
+
+func saveLoginLogs(logs model.LoginLog) {
 	_ = logService.CreateLoginLog(logs)
 }
 

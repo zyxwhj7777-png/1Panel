@@ -23,6 +23,7 @@ import (
 	"github.com/1Panel-dev/1Panel/core/constant"
 	"github.com/1Panel-dev/1Panel/core/global"
 	psessionUtils "github.com/1Panel-dev/1Panel/core/init/session/psession"
+	"github.com/1Panel-dev/1Panel/core/utils/common"
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -33,10 +34,18 @@ const (
 	headerOperationResolved    = "X-Op-Resolved"
 )
 
-func OperationLog() gin.HandlerFunc {
+type OperationLogPolicy func(*gin.Context) bool
+
+func OperationLog(policies ...OperationLogPolicy) gin.HandlerFunc {
+	policies = append([]OperationLogPolicy(nil), policies...)
 	return func(c *gin.Context) {
 		c.Request.Header.Del(headerNeedOperationResolve)
-
+		for _, policy := range policies {
+			if policy != nil && policy(c) {
+				c.Next()
+				return
+			}
+		}
 		if strings.Contains(c.Request.URL.Path, "search") || c.Request.Method == http.MethodGet {
 			c.Next()
 			return
@@ -49,7 +58,7 @@ func OperationLog() gin.HandlerFunc {
 		record := &model.OperationLog{
 			Source:    source,
 			Node:      currentNode,
-			IP:        c.ClientIP(),
+			IP:        common.AuditClientIP(c),
 			Method:    strings.ToLower(c.Request.Method),
 			Path:      pathItem,
 			UserAgent: c.Request.UserAgent(),
@@ -119,10 +128,8 @@ func OperationLog() gin.HandlerFunc {
 		}
 
 		record.User = LoadOperationUser(c)
+		record.IP = common.AuditClientIP(c)
 		if c.GetBool("API_AUTH") {
-			if clientIP := c.GetString("API_AUTH_CLIENT_IP"); clientIP != "" {
-				record.IP = clientIP
-			}
 			record.AuthMethod = "api_key"
 			record.APIKeyID = c.GetString("API_AUTH_KEY_ID")
 			record.APIKeyName = c.GetString("API_AUTH_KEY_NAME")

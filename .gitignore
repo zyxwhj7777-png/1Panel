@@ -80,3 +80,5 @@ opencode.json
 superpowers
 .worktrees/
 .codex/
+
+/agent/utils/vm/helper/bin/1panel-kvm*

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/1Panel-dev/1Panel/agent/app/model"
+	"github.com/1Panel-dev/1Panel/agent/global"
 	"gorm.io/gorm"
 )
 
@@ -15,9 +16,13 @@ type IAgentAccountRepo interface {
 	WithByMasterAccountID(masterID uint) DBOption
 	Create(account *model.AgentAccount) error
 	Save(account *model.AgentAccount) error
+	UpdateVerification(account *model.AgentAccount) error
+	ResetVerificationByAppInstallID(appInstallID uint) error
 	DeleteByID(id uint) error
 	List(opts ...DBOption) ([]model.AgentAccount, error)
+	Count() (int64, error)
 	CountTextByProviders(providers []string) (map[string]int64, error)
+	SaveWithModels(account *model.AgentAccount, models []model.AgentAccountModel) error
 }
 
 func NewIAgentAccountRepo() IAgentAccountRepo {
@@ -55,6 +60,30 @@ func (a AgentAccountRepo) Save(account *model.AgentAccount) error {
 	return getDb().Save(account).Error
 }
 
+func (a AgentAccountRepo) UpdateVerification(account *model.AgentAccount) error {
+	result := getDb().Model(&model.AgentAccount{}).Where("id = ?", account.ID).Updates(map[string]interface{}{
+		"verified":     account.Verified,
+		"verified_at":  account.VerifiedAt,
+		"verify_error": account.VerifyError,
+		"verify_model": account.VerifyModel,
+	})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func (a AgentAccountRepo) ResetVerificationByAppInstallID(appInstallID uint) error {
+	return getDb().Model(&model.AgentAccount{}).Where("app_install_id = ? AND validate_availability = ?", appInstallID, true).Updates(map[string]interface{}{
+		"verified":     false,
+		"verified_at":  nil,
+		"verify_error": "",
+	}).Error
+}
+
 func (a AgentAccountRepo) DeleteByID(id uint) error {
 	return getDb().Delete(&model.AgentAccount{}, id).Error
 }
@@ -65,6 +94,12 @@ func (a AgentAccountRepo) List(opts ...DBOption) ([]model.AgentAccount, error) {
 		return nil, err
 	}
 	return accounts, nil
+}
+
+func (a AgentAccountRepo) Count() (int64, error) {
+	var count int64
+	err := getDb().Model(&model.AgentAccount{}).Count(&count).Error
+	return count, err
 }
 
 func (a AgentAccountRepo) CountTextByProviders(providers []string) (map[string]int64, error) {
@@ -95,6 +130,25 @@ func (a AgentAccountRepo) CountTextByProviders(providers []string) (map[string]i
 		counts[row.Provider] = row.Count
 	}
 	return counts, nil
+}
+
+func (a AgentAccountRepo) SaveWithModels(account *model.AgentAccount, models []model.AgentAccountModel) error {
+	return global.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(account).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("account_id = ?", account.ID).Delete(&model.AgentAccountModel{}).Error; err != nil {
+			return err
+		}
+		if len(models) == 0 {
+			return nil
+		}
+		for i := range models {
+			models[i].AccountID = account.ID
+			models[i].SortOrder = i + 1
+		}
+		return tx.Create(&models).Error
+	})
 }
 
 func normalizeProviders(providers []string) []string {

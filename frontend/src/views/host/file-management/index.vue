@@ -506,6 +506,7 @@
                     <template #main>
                         <ComplexTable
                             class="file-table"
+                            :cache-pagination="false"
                             :pagination-config="paginationConfig"
                             v-model:selects="selects"
                             :ref="(el) => setTableRef(item.id, el)"
@@ -527,9 +528,6 @@
                                 show-overflow-tooltip
                                 :sortable="'custom'"
                                 prop="name"
-                                :tooltip-options="{
-                                    placement: 'bottom-start',
-                                }"
                             >
                                 <template #default="{ row }">
                                     <div class="file-row">

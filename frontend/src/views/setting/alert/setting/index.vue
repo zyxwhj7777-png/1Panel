@@ -62,6 +62,7 @@
                 </el-alert>
                 <ComplexTable
                     class="mt-3"
+                    :cache-pagination="false"
                     :pagination-config="paginationConfig"
                     :data="allConfigs"
                     :empty-text="$t('commons.msg.noneData')"

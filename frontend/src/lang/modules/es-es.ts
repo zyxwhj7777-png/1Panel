@@ -2,6 +2,11 @@ import { getFuLocaleMessage } from '@/lang/fu';
 
 const message = {
     apiKeyManagement: {
+        reveal: 'Mostrar secreto',
+        hideSecret: 'Ocultar secreto',
+        revealHelp: 'Guarde el secreto de forma segura. Mostrarlo no reactiva claves deshabilitadas o caducadas.',
+        deleteConfirm:
+            '¿Eliminar «{0}»? Se destruirá el secreto y se quitará la clave de la lista. Se rechazarán nuevas solicitudes y se cerrarán sus terminales. Se conservará la auditoría; las tareas en ejecución no se cancelarán. Esta acción es irreversible.',
         title: 'API Key',
         manage: 'Gestionar claves API',
         personalEntry: 'Gestiona tus claves, condiciones de acceso y vinculación de la APP en Ajustes.',
@@ -23,10 +28,6 @@ const message = {
         allowAppBinding: 'Permitir vinculación de APP por QR',
         bindingDisableHelp:
             'Desactivar la vinculación por QR impide nuevas vinculaciones. Los dispositivos ya vinculados pueden seguir usando la clave hasta que se desactive, se revoque o caduque.',
-        saveSecret: 'Copia y guarda la clave ahora. Tras cerrar, la gestión normal no podrá mostrarla de nuevo.',
-        saved: 'He guardado la clave',
-        alreadyCreated:
-            'La clave ya se creó y no se mostrará de nuevo. Si se perdió la respuesta original, revócala y crea otra, o usa QR si está permitido.',
         uncertain:
             'El resultado es incierto. Reintenta con los mismos datos para evitar duplicados, o cierra y revisa la lista antes de crear otra.',
         legacyHelp:
@@ -291,7 +292,7 @@ const message = {
             rePassword: 'La confirmación de la contraseña no coincide con la contraseña.',
             requiredInput: 'Este campo es obligatorio.',
             requiredSelect: 'Seleccione un elemento de la lista',
-            illegalChar: 'Actualmente no se admite la inyección de caracteres & ; $ \' ` ( ) " > < ｜',
+            illegalChar: "Actualmente no se admite la inyección de caracteres & ; $ ' ` ( ) \" > < {'|'}",
             illegalInput: 'Este campo no debe contener caracteres no permitidos.',
             duplicate: 'Este valor debe ser único.',
             commonName:
@@ -365,6 +366,8 @@ const message = {
             serviceNotStarted: 'El servicio {0} no está iniciado.',
         },
         status: {
+            autoSyncEnabled: 'Sincronización automática activada',
+            autoSyncDisabled: 'Sincronización automática desactivada',
             running: 'En ejecución',
             done: 'Completado',
             scanFailed: 'Incompleto',
@@ -467,7 +470,7 @@ const message = {
         ssl: 'Certificado | Certificados',
         database: 'Base de datos | Bases de datos',
         aiTools: 'IA',
-        mcp: 'MCP',
+        mcp: 'Gestión de MCP',
         container: 'Contenedor | Contenedores',
         cronjob: 'Tarea programada | Tareas programadas',
         system: 'Sistema',
@@ -496,7 +499,7 @@ const message = {
         quickDirDelete: '¿Confirmar la eliminación de ({0})?',
         quickDir: 'Acceso rápido',
         minQuickJump: 'Agrega al menos una entrada de acceso rápido',
-        maxQuickJump: 'Puedes agregar hasta cuatro entradas de acceso rápido',
+        maxQuickJump: 'Puedes agregar hasta cinco entradas de acceso rápido',
         database: 'Database - All',
         restart_1panel: 'Reiniciar panel',
         restart_system: 'Reiniciar servidor',
@@ -776,7 +779,68 @@ const message = {
         localIP: 'IP local',
     },
     aiTools: {
+        gpuGroup: {
+            usageScope:
+                'Las asociaciones proceden de las configuraciones de aplicaciones gestionadas por 1Panel en este nodo; la memoria se mide para toda la GPU.',
+            usageTitle: 'Uso de GPU',
+            usageHelp:
+                'Otras implementaciones podrían usar las GPU seleccionadas. Continuar puede causar falta de memoria o reducir el rendimiento. Puede continuar.',
+            usageUnknown: 'No se pudo comprobar todo el uso de GPU. Verifique los recursos antes de continuar.',
+            usagePossible: 'Asignación por cantidad; podría usar esta GPU',
+            usageMemory: 'Memoria de GPU (usada / total)',
+            dimension: 'Dimensión',
+            namePlaceholder: 'Ej.: par de GPU para inferencia',
+            descriptionPlaceholder: 'Opcional: describa el propósito o uso del grupo',
+            selectedGPU: '{count} GPU seleccionadas',
+
+            byGroup: 'Por grupo',
+            byNUMA: 'Por NUMA',
+            ungrouped: 'Sin grupo',
+
+            unknownNode: 'Nodo NUMA desconocido',
+            memoryNode: 'Nodo de memoria',
+            selectNode: 'Seleccionar las GPU de este nodo',
+            noDevices: 'No hay GPU en este nodo',
+            affinity: 'Afinidad de CPU / memoria',
+            followGPU: 'Seguir los nodos de las GPU',
+            bindingPreview: 'Vista previa de vinculación',
+
+            overview: 'Resumen de dispositivos',
+            groups: 'Grupos de GPU',
+            history: 'Historial de supervisión',
+            source: 'Configuración',
+            custom: 'Personalizada',
+            selectRequired: 'Seleccione un grupo de GPU',
+            snapshotHelp:
+                'Los despliegues guardan la configuración actual. Los cambios del grupo no actualizan los despliegues existentes automáticamente.',
+            changed: 'El grupo de origen cambió o se eliminó. Se sigue usando la configuración guardada.',
+            applyLatest: 'Aplicar la configuración más reciente',
+            deployments: 'Despliegues asociados',
+            help: 'Los grupos reutilizan ajustes de GPU y NUMA. Los dispositivos pueden pertenecer a varios grupos, sin exclusividad ni aislamiento de memoria.',
+            deleteHelp: '¿Eliminar el grupo «{name}»? Los despliegues existentes conservarán su configuración.',
+            vendor: 'Tipo de dispositivo',
+            topology: 'Topología NUMA',
+        },
         agents: {
+            feishuUpgradeNotice:
+                'Antes de actualizar se debe tratar el complemento Feishu antiguo. Se requiere una copia completa; si falla, se restauran la imagen anterior y sus datos. Un complemento sin configurar solo se desactiva.',
+            feishuRecoveryNotice:
+                'Si el cambio falla, se intentará recuperar la puerta de enlace con Feishu desactivado. No se reactivará el complemento antiguo. Se conserva la copia de configuración.',
+            feishuRecover: 'Desactivar complemento antiguo y recuperar inicio',
+            feishuRecoverConfirm:
+                '¿Guardar la configuración, desactivar el complemento Feishu antiguo sin configurar y reiniciar? Todos los canales se interrumpirán brevemente. Se conservan los archivos del complemento.',
+            feishuBuiltin: 'Feishu integrado',
+            feishuImageRequired: 'Use una imagen que incluya Feishu.',
+            feishuLegacy:
+                'El complemento anterior ya no se mantiene. Revise las sesiones, la transmisión y las menciones antes de cambiar.',
+            feishuBuiltinHint: 'Este complemento se actualiza con la imagen de OpenClaw.',
+            feishuSessionTopic: 'Separar por tema del grupo',
+            feishuSessionTopicSender: 'Separar por tema del grupo y remitente',
+            feishuSwitch: 'Cambiar al complemento integrado',
+            feishuMentionChoice: 'Elija explícitamente si se requiere una mención antes de cambiar.',
+            feishuSwitchConfirm:
+                '¿Cambiar a Feishu integrado y reiniciar? Todos los canales se interrumpirán brevemente. Las herramientas exclusivas del complemento antiguo dejarán de funcionar; la transmisión y los temas seguirán sus opciones y algunas conversaciones podrán iniciar sesiones nuevas. Se conservan credenciales, vínculos y emparejamientos.',
+
             deepSeekAccessHostHelper:
                 'Introduzca la IPv4 o el nombre de host usado en el navegador, sin protocolo, puerto ni ruta. HTTPS usa el certificado local de la aplicación.',
             deepSeekAuthHelper:
@@ -787,7 +851,7 @@ const message = {
             nativeAgentAccessUnavailable:
                 'La instalación existente no tiene una dirección o puerto HTTPS compatible. Revise la configuración de la aplicación.',
             agent: 'Agente',
-            account: 'Cuenta de modelo',
+            account: 'Servicio de modelo',
             batchOperation: 'Operación por lotes',
             operationType: 'Tipo de operación',
             batchAction: '{0} por lotes',
@@ -801,10 +865,10 @@ const message = {
             skillSource: 'Origen de Skill',
             skillKeyword: 'Palabra clave de Skill',
             clawHubSkillPlaceholder: 'Busque y seleccione una Skill primero',
-            noAccountHint: 'Selecciona una cuenta de modelo existente o agrega una nueva.',
-            accountCount: '{0} cuentas de modelo',
+            noAccountHint: 'Selecciona un servicio de modelo existente o agrega uno nuevo.',
+            accountCount: '{0} servicios de modelo',
             syncAgents: 'Sincronizar agentes vinculados',
-            syncAgentsHelper: 'Actualiza openclaw.json para los agentes que usan esta cuenta de modelo',
+            syncAgentsHelper: 'Actualiza openclaw.json para los agentes que usan este servicio de modelo',
             appVersion: 'Versión de la app',
             webuiPort: 'Puerto WebUI',
             tokenOrAuth: 'Token/Autenticación',
@@ -815,6 +879,7 @@ const message = {
             accountModelsHelper:
                 'Configure los modelos que esta cuenta expone a OpenClaw para el cambio y la configuración',
             accountModelsRequired: 'Configure al menos un modelo',
+            accountModelsSingle: 'Este proveedor permite configurar como máximo un modelo',
             verifyModel: 'Modelo de verificación',
             verifyModelHelper:
                 'Seleccione un modelo al que esta cuenta tenga acceso. Se usará para enviar una solicitud mínima al guardar y verificar la conexión.',
@@ -829,6 +894,9 @@ const message = {
                 'No se pudieron obtener los modelos. Se usarán los modelos predeterminados.',
             accountModelsDuplicate: 'Existen modelos duplicados en el catálogo',
             modelPool: 'Pool de modelos',
+            ollamaRegisterOnly:
+                'Solo se registran modelos ya disponibles en este servicio Ollama. No se iniciará ninguna descarga.',
+            deleteModelFiles: 'Eliminar también los archivos del modelo del servicio Ollama',
             fallbackModels: 'Modelos de respaldo',
             addFallbackModel: 'Agregar modelo de respaldo',
             fallbackModelsEmpty: 'No hay modelos de respaldo configurados',
@@ -843,7 +911,7 @@ const message = {
             useModelDefault: 'Usar valor predeterminado del modelo',
             reasoning: 'Modelo de razonamiento',
             verified: 'Verificado',
-            verifySkipped: 'Sin verificación',
+            verifySkipped: 'No requiere verificación',
             skillsTab: 'Habilidades',
             pluginsTab: 'Complementos',
             pluginsInstalled: 'Instalados',
@@ -1014,43 +1082,237 @@ const message = {
                 'Introduce la URL completa del endpoint de generación de imágenes para cuentas Custom. La ruta no se añade automáticamente. Ejemplo: {0}',
             apiTypeBaseURLMismatch:
                 'La Base URL actual parece una ruta {0}, pero está seleccionado {1}. URL recomendada: {2}',
-            validateAvailability: 'Validar disponibilidad de la cuenta',
+            validateAvailability: 'Verificar disponibilidad al guardar',
             validateAvailabilityHelper: 'Envía un mensaje mínimo antes de guardar para validar la API',
             validateImageAvailabilityHelper: 'Genera una imagen mínima antes de guardar y puede generar costes',
         },
         model: {
+            searchTitle: 'Buscar y descargar modelos',
+            searchHelper:
+                'Busca modelos en ModelScope o Hugging Face y luego despliégalos o crea una Recipe en Preparación de modelos.',
+            modelScopeSearchHelper: 'Acceso estable en China continental',
+            huggingFaceNetworkHelper:
+                'Las búsquedas y descargas de Hugging Face requieren acceso del servidor al sitio. Si no está disponible, configure una URL de espejo accesible en Configuración o seleccione ModelScope. En entornos sin conexión, cargue los modelos manualmente.',
+            huggingFaceSearchHelper: 'Amplia colección de modelos',
+            searchPlaceholder: 'Introduce el nombre o ID del repositorio, p. ej. Qwen/Qwen3-8B',
+            popularSearches: 'Búsquedas populares',
+            searchSort: 'Ordenar por',
+            onlyTokenizer: 'Solo tokenizador',
+            downloadStatus: 'Estado de descarga',
+            downloaded: 'Descargado',
+            alreadyExists: 'Ya existe',
+            downloadCompleted: 'Descarga completada',
+            localFilesMissing: 'No se encontraron los archivos locales',
+            ollamaNameHelper:
+                'Introduzca el nombre completo del modelo de la biblioteca de Ollama. Si no especifica una etiqueta, se usará latest.',
+            downloadHelper:
+                'Descargue modelos o tokenizadores de ModelScope o Hugging Face, o añada archivos locales siguiendo los {requirements}.',
+            localModelSizeHelper:
+                'Indica el tamaño actual del directorio, no que todos los archivos hayan terminado de subirse.',
+            localModelLayoutTitle: 'Ejemplos',
+            localLayoutDirect: 'Ubicación directa',
+            localLayoutGrouped: 'Por organización (opcional)',
+            serviceHelper:
+                'Conecte servicios de modelos de nubes públicas, motores de inferencia locales y puertas de enlace de IA para que los utilicen los agentes integrados de 1Panel y agentes externos como WorkBuddy.',
+            gpuType: 'Tipo de GPU',
+            vllmVersion: 'Versión de vLLM',
+            vllmImage: 'Imagen de vLLM',
+            servicePort: 'Puerto del servicio',
+            numaBinding: 'Afinidad NUMA',
+            numaOff: 'Sin afinidad',
+            numaAuto: 'Automática',
+            numaManual: 'Manual',
+            numaNodes: 'Nodos NUMA',
+            numaHint: 'Deje la afinidad desactivada salvo que necesite ajustar el rendimiento.',
+            numaHelp:
+                'Vincula la aplicación a los nodos de CPU y memoria seleccionados. La selección automática elige nodos cercanos a las GPU.',
+            numaRequirements:
+                'La imagen debe incluir numactl. Al activar la afinidad se añade SYS_NICE automáticamente si es necesario.',
+            numaUnknown:
+                'No se pudo identificar el nodo de CPU y memoria asociado a la GPU. Deje la afinidad desactivada o seleccione los nodos manualmente si conoce la distribución del hardware.',
+            numaCross: 'Las GPU seleccionadas abarcan varios nodos NUMA. Selecciónelos manualmente.',
+            numaCount: 'La afinidad automática requiere GPU específicas o todas las GPU.',
+            numaRequired: 'Seleccione al menos un nodo NUMA.',
+            numaUnavailable: 'El nodo NUMA no está disponible o carece de CPU o memoria.',
+            gpuAcceleration: 'Aceleración GPU',
+            gpuMode: 'Selección de aceleradores',
+            gpuAll: 'Todos los aceleradores',
+            gpuCount: 'Especificar cantidad',
+            gpuSpecific: 'Seleccionar dispositivos',
+            gpuAllHelper: 'Usar todos los aceleradores disponibles de este tipo en el nodo actual.',
+            gpuCountHelper:
+                'El entorno de ejecución asigna la cantidad solicitada sin vincular dispositivos específicos.',
+            gpuSpecificHelper: 'Seleccione manualmente los aceleradores específicos.',
+            gpuCountRequired: 'Introduzca un entero mayor que 0',
+            gpuDevices: 'Dispositivos GPU',
+            gpuCapabilitiesHelper:
+                'Configure las capacidades de NVIDIA GPU del contenedor. Se recomienda mantener las opciones predeterminadas.\n• gpu: Permite al contenedor acceder a la GPU. Obligatorio.\n• utility: Permite consultar y supervisar el estado de la GPU, por ejemplo, con nvidia-smi.\n• compute: Permite realizar cálculos en la GPU, como CUDA. Suele ser necesario para la inferencia de modelos.',
+            gpuSelectRequired: 'Seleccione al menos un dispositivo GPU disponible.',
+            gpuUnsupported: 'No compatible',
+            gpuNotDetected: 'No se detectaron aceleradores compatibles',
+            gpuMissing: 'No disponible',
+            modelCategory: 'Categoría del modelo',
+            modelName: 'Nombre del modelo',
+            modelArchitecture: 'Tipo de modelo',
+            backboneParams: 'Parámetros base de MoE',
+            activeParams: 'Parámetros activos',
+            engram: 'Engram',
+            weightProvider: 'Proveedor de pesos',
+            weightFootprint: 'Tamaño de los pesos',
+            undisclosed: 'No divulgado',
+            featuredModels: 'Modelos destacados',
+            deploy: 'Desplegar',
+            approxWeightSize: 'Aprox. {0} GB',
+            services: 'Servicios de modelos',
+            addInstance: 'Añadir instancia',
+            modelScopeEndpointHelper: 'Para buscar y descargar modelos de ModelScope. Usa la URL oficial por defecto.',
+            modelTokenHelper: 'Opcional. Use un token con permisos para acceder a modelos privados o restringidos.',
+            tokenizerDir: 'Directorio de tokenizadores',
+            tokenizerDirHelper:
+                'Directorio para descargas y la lista de tokenizadores locales. Cambiarlo no mueve los archivos existentes.',
+            modelDirHelper:
+                'Directorio de descarga y listado de modelos locales. Cambiarlo no mueve los archivos existentes.',
+            featuredModelsHelper:
+                'Explora los modelos seleccionados por 1Panel, consulta sus especificaciones, casos de uso y fuentes de descarga, y elige un modelo para descargar.',
+            featuredModelsSyncHelper:
+                'La sincronización automática actualiza el catálogo de modelos destacados cada madrugada sin descargar archivos de modelos. También puedes sincronizar manualmente en cualquier momento.',
+            recipeSyncHelper:
+                'La sincronización automática actualiza las recetas sincronizadas cada madrugada sin afectar a las personalizadas. También puedes sincronizar manualmente en cualquier momento.',
+            serviceStatus: 'Estado del servicio',
+            readinessNotRunning: 'Sin ejecutar',
+            readinessWaiting: 'Esperando disponibilidad',
+            readinessPreparing: 'Preparando',
+            readinessReady: 'Listo',
+            readinessNotReady: 'No está listo',
+            readinessPreparingHelper:
+                'El contenedor se ha iniciado, pero aún no ha superado la comprobación de estado. El modelo podría seguir cargándose. Espera un momento.',
+            readinessReadyHelper:
+                'La última comprobación de estado del contenedor se ha superado. El servicio está listo.',
+            readinessNotReadyHelper:
+                'El contenedor sigue ejecutándose, pero varias comprobaciones de estado consecutivas han fallado. El servicio no está listo. Consulta los registros del contenedor.',
+            addInstanceHelper: 'Cree una instancia de vLLM para servir los modelos descargados.',
+            addService: 'Añadir',
+            onlineModel: 'Modelos en línea',
+            instanceDeployment: 'Despliegue por instancia',
+            engines: 'Motores de inferencia locales',
+            modelManagement: 'Gestión de modelos',
+            ollamaManagement: 'Gestión de Ollama',
+            vllmManagement: 'Gestión de vLLM',
+            serviceDetails: 'Detalles del servicio',
+            deleteDeploymentHelper: 'Se detendrá y eliminará esta instancia',
+            deleteDeploymentServiceHelper:
+                'Se detendrá y eliminará esta instancia junto con sus servicios de modelos asociados',
+            connectionInfo: 'Información de conexión',
+            deploymentInfo: 'Información del despliegue',
+            serviceAPIHelper: 'Este servicio ofrece una API compatible con OpenAI.',
+            serviceAddressHelper:
+                'Use la dirección del contenedor para sus aplicaciones y la dirección externa para aplicaciones del host o externas.',
+            externalAddress: 'Dirección externa',
+            createVllmInstance: 'Crear instancia de vLLM',
+            previewDeployment: 'Vista previa de la configuración',
+            deploymentOverview: 'Resumen del despliegue',
+            backToForm: 'Volver a editar',
+            composePreviewHelper:
+                'Añada campos que no estén en el formulario. Modifique los ajustes existentes en el formulario. Editar Compose no actualiza el formulario ni la sincronización de cuentas.',
+            envPreviewHelper:
+                'Las variables de entorno se generan a partir del formulario. Vuelva al formulario para modificarlas.',
+            generateCompose: 'Generar y previsualizar',
+            saveDeploy: 'Guardar y desplegar',
+            composeRegenerateHelper:
+                'El formulario ha cambiado. Regenerar Compose sobrescribirá los cambios manuales. ¿Continuar?',
+            deploymentNameHelper:
+                'Nombre de la instancia, usado en el directorio de instalación y fijo tras crearla. Configure un alias para cambiar el nombre mostrado.',
+            deploymentAliasHelper:
+                'Nombre opcional para la lista. Si se deja vacío, se muestra el nombre de la aplicación. Cambiar solo el alias no reinicia el contenedor.',
+            deploymentContainerNameHelper:
+                'Nombre del contenedor Docker. Por defecto coincide con la aplicación y puede configurarse por separado. Cambiarlo vuelve a crear el contenedor.',
+            imageVersion: 'Versión de la imagen',
+            deployments: 'Despliegue de modelos',
+            files: 'Preparación de modelos',
+            connectExternal: 'Conectar servicio externo',
+            recipes: 'vLLM Recipes',
+            recipeConfig: 'Configuración de Recipe',
+            selectRecipe: 'Seleccionar Recipe',
+            createRecipe: 'Crear Recipe',
+            recipeSynced: 'Sincronizado',
+            recipeCustom: 'Personalizado',
+            recipeHelper:
+                'Gestiona recetas de despliegue para distintos equipos, reutiliza argumentos de inicio para desplegar rápidamente o importa comandos desde {link}.',
+            recipeFormHelper:
+                'Vaya a {link}, seleccione el proveedor del modelo y luego el modelo de destino. Configure el hardware, la variante de cuantización, la estrategia de despliegue y otras opciones para generar el comando de inicio final.',
+            recipeArguments: 'Argumentos de inicio',
+            recipeImportCommand: 'Importar comando',
+            recipeImportPlaceholder:
+                'Pegue aquí un comando de inicio en formato pip/uv o docker. 1Panel lo analizará y completará el formulario automáticamente.',
+            recipeVariablesNotSupported:
+                'No se admiten referencias a variables en los comandos. Use valores concretos; configure las variables de entorno en su campo correspondiente.',
+            recipeImportError:
+                'No se detectó un comando de inicio válido. Pegue un comando pip/uv o docker que incluya un modelo.',
+            engineProvider: 'Motor / Proveedor',
+            endpoint: 'Punto de conexión',
+            localService: 'Local',
+            cloudService: 'Nube',
+            cloudAccount: 'Cuenta en la nube',
+            connectionStatus: 'Estado de conexión',
+            verify: 'Verificar',
+            verifying: 'Verificando',
+            verifyFailed: 'Verificación fallida',
+            verificationInfo: 'Detalles de verificación',
+            verifiedAt: 'Hora de verificación',
+            verifyModelChangeHelper:
+                'Cambiar el modelo de verificación marca el servicio como no verificado sin llamar al modelo.',
+            reverify: 'Verificar de nuevo',
+            verifyConfirm: 'Se verificará el modelo con la siguiente configuración. ¿Continuar?',
+            apiKeyHelper:
+                'Si el servicio no requiere una API Key, introduzca cualquier valor de relleno no vacío, como unused.',
+            verifyOnChangeHelper:
+                'Al activar o cambiar la conexión o el modelo de verificación, se verifica la API con un mensaje mínimo.',
+            verifyImageOnChangeHelper:
+                'Al activar o cambiar la conexión o el modelo de verificación, se genera una imagen mínima para verificar la API; pueden aplicarse cargos.',
+            unverified: 'Sin verificar',
+            manage: 'Gestionar',
+            loadFailed: 'No se pudo cargar. Actualice la página e inténtelo de nuevo.',
             model: 'Modelo',
             localModel: 'Modelos locales',
             create_helper: 'Descargar "{0}"',
-            ollama_doc: 'Puede visitar el sitio oficial de Ollama para buscar y encontrar más modelos.',
+            ollama_doc:
+                'Busque modelos en {link}. El modelo se descargará automáticamente al añadirlo. Asegúrese de que Ollama esté funcionando y de que haya suficiente espacio en disco.',
             container_conn_helper: 'Utilice esta dirección para el acceso o conexión entre contenedores',
-            ollama_sync:
-                'Al sincronizar modelos de Ollama, se detectaron los siguientes modelos que no existen. ¿Desea eliminarlos?',
             from_remote: 'Este modelo no fue descargado vía 1Panel, no hay registros de descarga relacionados.',
             no_logs: 'Los registros de descarga de este modelo han sido eliminados y no se pueden consultar.',
-            vllmVersionHelper: 'Para servidores FusionXpark GB 10, seleccione la versión -cu130.',
+            vllmVersionHelper: {
+                ascend: 'Versión estándar oficial de Ascend para dispositivos de la serie Ascend A2.',
+                ascendA3: 'Versión oficial Ascend A3 para dispositivos de la serie Ascend A3.',
+                ascendA5: 'Versión oficial Ascend A5 para dispositivos 950DT.',
+                ascend310P: 'Versión oficial Ascend 310P para dispositivos Atlas 300I DUO y Atlas 200I Pro.',
+                default:
+                    'Versión oficial estándar con CUDA 13.0, para controladores recientes y GPU de nuevas arquitecturas.',
+                dspark: 'Versión personalizada de NVIDIA GB10 para dos dispositivos, con una imagen mantenida por 1Panel.',
+            },
             vllmDeployProfile: 'Modelo de despliegue',
             vllmProfileFlash0731: 'DeepSeek V4 Flash 0731',
             vllmProfileVisionExp: 'DeepSeek V4 Flash Vision Exp',
-            vllmCommandPortHelper:
-                'El comando de inicio debe usar el puerto {0}; de lo contrario, no se podrá acceder al servicio.',
-            ascendVisibleDevices: 'Dispositivos Ascend visibles (ASCEND_RT_VISIBLE_DEVICES)',
-            syncModelAccount: 'Sincronizar con cuenta de modelo',
+            syncModelAccount: 'Sincronizar con servicio de modelo',
             modelAccountAddressHelper:
                 'La dirección del contenedor es para contenedores de agentes; 127.0.0.1, IP del sistema o dirección personalizada es para AI Gateway o servicios externos.',
             containerAddress: 'Dirección del contenedor',
             customAddress: 'Dirección personalizada',
-            downloader: 'Descargador',
+            downloader: 'Descarga de modelos',
+            modelDirectoryHelper:
+                'La lista muestra de forma predeterminada los modelos descargados en el directorio configurado en Preparación de modelos > Configuración.',
+            modelDirectoryPlaceholder: 'Buscar modelos o introducir una ruta completa',
+            selectModel: 'Seleccionar modelo',
+            selectModelDirectory: 'Seleccionar directorio',
             modelDir: 'Directorio del modelo',
-            manualDownload: 'Descarga manual',
             modelSource: 'Fuente del modelo',
             repoID: 'ID del repositorio',
             endpointLabel: 'Endpoint de {0}',
             acceleratedEndpointLabel: 'Endpoint de aceleración de {0}',
-            tokenOptionalLabel: 'Token de {0} (opcional)',
-            searchSource: 'Buscar en {0}',
-            hfEndpointHelper:
-                'Configure un endpoint de aceleración cuando el acceso a HuggingFace sea inestable. La búsqueda, los detalles y las descargas lo utilizarán.',
+            tokenLabel: 'Token de {0}',
+            hfEndpointHelper: 'URL de espejo opcional para búsquedas, detalles y descargas de modelos de HuggingFace.',
+            sortDefault: 'Orden predeterminado',
+            sortMostParameters: 'Más parámetros',
+            sortLeastParameters: 'Menos parámetros',
             sortTrending: 'Tendencias',
             sortLikes: 'Más valorados',
             sortDownloads: 'Más descargados',
@@ -1058,9 +1320,7 @@ const message = {
             sortCreated: 'Más recientes',
             downloadsCount: 'Descargas',
             likes: 'Me gusta',
-            taskQueue: 'Cola de descargas',
             progress: 'Progreso',
-            localDownloaded: 'Descargados',
             modelInfo: 'Detalles del modelo',
             downloading: 'Descargando',
             canceled: 'Cancelado',
@@ -1093,9 +1353,9 @@ const message = {
             notInstalled: 'No instalado',
             usage: 'Uso',
             accountPool: 'Grupo de cuentas',
-            importModelAccount: 'Importar cuenta de modelo',
-            editModelAccount: 'Editar cuenta de modelo',
-            selectModelAccount: 'Seleccionar una cuenta de modelo existente',
+            importModelAccount: 'Importar servicio de modelo',
+            editModelAccount: 'Editar servicio de modelo',
+            selectModelAccount: 'Seleccionar un servicio de modelo existente',
             upstreamApiAddress: 'Dirección de API ascendente',
             priority: 'Prioridad',
             healthStatus: 'Estado de salud',
@@ -1152,8 +1412,8 @@ const message = {
             waitingQueue: 'Cola de espera actual',
             currentActiveUsers: 'Usuarios activos actuales',
             activeStreamingRequests: 'Solicitudes de streaming activas',
-            modelAccountConcurrency: 'Concurrencia de cuentas de modelo',
-            accountAvailability: 'Disponibilidad de cuentas de modelo',
+            modelAccountConcurrency: 'Concurrencia de servicios de modelo',
+            accountAvailability: 'Disponibilidad de servicios de modelo',
             capacityFull: 'Capacidad completa',
             groupConcurrency: 'Concurrencia de grupos de usuarios',
             apiKeyConcurrency: 'Concurrencia de API Keys',
@@ -1209,7 +1469,7 @@ const message = {
             esLogCircuitUntil: 'Circuito ES hasta',
             serviceOperateConfirm: '¿Confirmar {0} el servicio de gateway de IA?',
             deleteTargetConfirm: '¿Eliminar {0} {1}?',
-            deleteBackendTitle: 'Eliminar cuenta de modelo',
+            deleteBackendTitle: 'Eliminar servicio de modelo',
             userFallback: 'Usuario eliminado (ID: {0})',
             requestModel: 'Modelo solicitado',
             upstreamModel: 'Modelo upstream',
@@ -1222,7 +1482,7 @@ const message = {
             usageTrend: 'Tendencia de uso',
             distributionBy: 'Distribución por {0}',
             unmatched: 'Sin coincidencia',
-            modelAccount: 'Cuenta de modelo',
+            modelAccount: 'Servicio de modelo',
             serviceProvider: 'Proveedor',
             tokenUsage: 'Uso de tokens',
             percent: 'Porcentaje',
@@ -1364,7 +1624,7 @@ const message = {
             apiKeyCount: 'Cantidad',
         },
         skillsHub: {
-            title: 'Skills Hub',
+            title: 'Repositorio de Skills',
             upload: 'Subir Skill',
             importSkill: 'Importar Skill',
             repositoryAddress: 'Dirección del repositorio',
@@ -1495,6 +1755,8 @@ const message = {
         },
         benchmark: {
             title: 'Benchmark',
+            description:
+                'Realice pruebas de rendimiento de los servicios de modelos con distintas longitudes de solicitud y configuraciones de concurrencia para medir métricas como el rendimiento, el tiempo hasta el primer token y la latencia de las solicitudes.',
             launchCommand: 'Comando de inicio',
             retest: 'Volver a probar',
             statusRunning: 'En ejecución',
@@ -1533,6 +1795,25 @@ const message = {
             extraHeaders: 'Encabezados adicionales',
         },
         vllmMonitor: {
+            averagePromptTokens: 'Tokens de entrada medios por solicitud',
+            itl: 'ITL medio',
+            peakITLHelper:
+                'Las longitudes de entrada/salida se ponderan por solicitudes; ITL por el número de muestras de intervalos de salida, usando los datos de monitorización existentes.',
+            peakMaxConcurrency: 'Máximo de solicitudes en ejecución',
+            peakAnalysis: 'Análisis de picos',
+            peakAuto: 'Buscar máxima concurrencia',
+            peakAtLeast: 'Solicitudes en ejecución ≥',
+            peakEqual: 'Solicitudes en ejecución =',
+            peakPeriods: 'Periodos de alta concurrencia',
+            peakPeriodsHelper: 'Últimos {0} de {1} periodos',
+            peakBefore: 'Antes',
+            peakAfter: 'Después',
+            peakDuring: 'Durante alta concurrencia',
+            peakAfterWindow: 'Ventana posterior',
+            peakNearby: 'Rendimiento alrededor del pico',
+            peakDuration: 'Duración entre muestras',
+            peakHelper:
+                'Los periodos se identifican con muestras originales; una sola muestra abarca 0 segundos. TPS se pondera por tiempo y TTFT por solicitudes. Las estadísticas se asignan a la fecha de la muestra y pueden cruzar límites. Las curvas muestran correlación temporal, no el rendimiento de las mismas solicitudes.',
             concurrency: 'Concurrencia actual',
             sampleMoment: 'Al tomar la muestra',
             sampleWindow: 'Intervalo de muestreo',
@@ -1568,12 +1849,14 @@ const message = {
             running: 'Solicitudes en ejecución',
             waiting: 'Solicitudes en espera',
             cacheUsage: 'Uso de caché KV',
-            promptThroughput: 'Rendimiento de tokens de entrada',
-            generationThroughput: 'Rendimiento de tokens de salida',
+            promptThroughput: 'Tasa de tokens de entrada',
+            generationThroughput: 'Tasa de tokens de salida',
             requestThroughput: 'Solicitudes completadas',
             timeToFirstToken: 'Latencia media del primer token',
             timePerOutputToken: 'Latencia media entre tokens',
             requestLatency: 'Latencia media de solicitud',
+            noMetrics:
+                'El endpoint de métricas es accesible, pero aún no hay métricas de vLLM compatibles. Algunas pueden aparecer solo después de la primera solicitud de inferencia.',
             unavailable:
                 'Métricas no disponibles. Compruebe que la instancia esté en ejecución y que /metrics sea accesible.',
             loadFailed: 'No se pudieron cargar los datos. Inténtelo de nuevo.',
@@ -1588,6 +1871,85 @@ const message = {
             timePerOutputTokenChart: 'Latencia entre tokens',
         },
         gpu: {
+            environment: {
+                hostGPU: 'GPU del host',
+                containerGPU: 'Compatibilidad GPU en contenedores',
+                monitorAvailable: 'Supervisión disponible',
+                monitorPartial: 'Supervisión parcial',
+                notReady: 'No está listo',
+                ready: 'Listo',
+                checkedAt: 'Última comprobación',
+                checkDetailsHelp: 'Revisa los detalles, verifica el entorno y vuelve a comprobarlo.',
+                driverActionTitle: 'Comprueba primero el controlador GPU del host',
+                driverActionHelp:
+                    'Instala o repara el controlador del dispositivo afectado antes de continuar con las comprobaciones del entorno de contenedores.',
+                driverGuide: 'Ver guía de instalación del controlador',
+                toolkitActionTitle: 'La compatibilidad GPU en contenedores no está lista',
+                toolkitActionHelp:
+                    'Instala o repara NVIDIA Container Toolkit y después comprueba la configuración de Docker.',
+                toolkitGuide: 'Ver guía de instalación de Toolkit',
+                dockerActionTitle: 'La compatibilidad NVIDIA GPU de Docker no está lista',
+                dockerActionHelp:
+                    'Comprueba la configuración del runtime NVIDIA en Docker y vuelve a realizar la comprobación.',
+                monitorUnaffected: 'Este problema no afecta a la supervisión de la GPU del host.',
+                title: 'Comprobaciones del entorno',
+                passedLabel: 'Comprobación correcta',
+                issuesLabel: 'Problemas del entorno · {count}',
+                loadFailedLabel: 'Comprobación fallida',
+                notDetectedLabel: 'Sin dispositivos detectados',
+                unknownLabel: 'Estado desconocido',
+                passed: 'Comprobaciones del entorno superadas',
+                issues: 'Problemas del entorno detectados: {count}. Siga las indicaciones para revisarlos.',
+                recheck: 'Comprobar de nuevo',
+                installGuide: 'Ver guía de instalación',
+                goContainerSettings: 'Abrir configuración de contenedores',
+                details: 'Detalles de la comprobación',
+                vendor: 'Fabricante',
+                gpuCount: 'Cantidad de GPU',
+                cardCount: 'Número de tarjetas',
+                notDetected: 'No se detectaron dispositivos GPU/NPU/XPU compatibles en el nodo actual.',
+                unknown: 'No se pudo confirmar el estado del dispositivo. Revise los detalles y vuelva a comprobarlo.',
+                loadFailed: 'No se pudo leer la información del dispositivo. Inténtelo de nuevo.',
+                notApplicable: 'No aplicable',
+                cudaHelper:
+                    'Esta es la versión de CUDA compatible con el controlador, no la versión de CUDA Toolkit instalada en el host.',
+                partialMemory: 'Algunos datos de memoria no están disponibles',
+                sharedMemory: 'Memoria del sistema compartida: {memory}',
+                driver: 'Controlador y herramientas de gestión de dispositivos',
+                nvidiaDriver: 'Controlador NVIDIA',
+                toolkit: 'NVIDIA Container Toolkit',
+                docker: 'Configuración de GPU NVIDIA en Docker',
+                statusPassed: 'Normal',
+                statusMissing: 'No detectado',
+                statusUnconfigured: 'Configuración pendiente',
+                statusFailed: 'Error de comprobación',
+                statusUnknown: 'Desconocido',
+                driverMissing:
+                    'No se detectó el controlador de {vendor}. Instale o compruebe el controlador (herramienta de detección: {tool}).',
+                driverFailed:
+                    'No se pudo leer la información del dispositivo mediante {tool}. Compruebe el estado del controlador.',
+                driverUnknown: 'No se pudo confirmar el estado del controlador del dispositivo. Compruebe {tool}.',
+                toolkitMissing:
+                    'No se detectó NVIDIA Container Toolkit. Instálelo y configúrelo antes de usar GPU NVIDIA en contenedores.',
+                toolkitFailed: 'No se pudo comprobar NVIDIA Container Toolkit. Revise los detalles del error.',
+                dockerConfigMissing:
+                    'No se detectó la entrada runtimes.nvidia en el archivo de configuración predeterminado de Docker. Complete la configuración siguiendo la documentación.',
+                dockerConfigInvalid:
+                    'La configuración del entorno de ejecución de NVIDIA en Docker no es válida. Compruebe runtimes.nvidia.path en daemon.json.',
+                dockerConfigPending:
+                    'El archivo de configuración predeterminado contiene la configuración del entorno de ejecución de NVIDIA, pero el servicio Docker actual aún no la ha cargado. Confirme el archivo de configuración, reinicie Docker y vuelva a comprobarlo.',
+                dockerConfigUnreadable:
+                    'No se pudo leer el archivo de configuración de Docker. Revise los detalles de la comprobación.',
+                dockerUnconfigured: 'La configuración de GPU NVIDIA en Docker está incompleta.',
+                dockerFailed:
+                    'No se pudo comprobar la configuración de GPU NVIDIA en Docker. Revise los detalles del error.',
+            },
+            systemMemory: 'Memoria compartida del sistema',
+            systemMemoryUsed: 'Memoria del sistema utilizada',
+            systemMemoryTotal: 'Memoria total del sistema',
+            systemMemoryAvailable: 'Memoria disponible del sistema',
+            systemMemoryHelper:
+                'Compartida por la CPU y la GPU. Muestra el uso de memoria de todo el sistema, no solo de la GPU.',
             memoryActivity: 'Actividad de lectura/escritura de memoria',
             hotspotTemperature: 'Temperatura del punto caliente',
             fanRPM: 'Velocidad del ventilador (RPM)',
@@ -1623,7 +1985,6 @@ const message = {
             historyPeak: 'Máximo',
             historyAggregated:
                 '{count} muestras agrupadas en intervalos de {seconds} segundos; los procesos solo muestran cantidades.',
-            historyRaw: '{count} muestras originales.',
             historyMetricEmpty: 'No hay datos de esta métrica en el período seleccionado',
             historyLoadFailed: 'No se pudo cargar el historial. Inténtelo de nuevo.',
             collectedAt: 'Fecha de recopilación',
@@ -1641,7 +2002,10 @@ const message = {
                 'Estos registros no tienen un ID de dispositivo estable. No se pueden verificar su identidad ni los valores ausentes.',
             pcieGeneration: 'Generación PCIe (actual / máxima)',
             pcieWidth: 'Ancho PCIe (actual / máximo)',
-            gpu: 'Monitoreo de GPU',
+            gpu: 'Gestión de GPU',
+            monitoringTitle: 'Monitoreo de GPU',
+            currentHelper:
+                'Consulte el estado en tiempo real y el uso de recursos de los dispositivos GPU/NPU/XPU del nodo actual. El resumen superior incluye todos los dispositivos; las métricas detalladas se muestran por dispositivo.',
             gpuHelper:
                 'No se detectó ningún comando de administración de GPU/XPU/NPU compatible. ¡Compruebe e inténtelo de nuevo!',
             process: 'Información del Proceso',
@@ -1697,32 +2061,27 @@ const message = {
             migModeHelper:
                 'Se utiliza para crear instancias MIG, implementando aislamiento físico de GPU en la capa de usuario.',
             migModeNA: 'No Compatible',
-            current: 'Monitoreo en Tiempo Real',
-            history: 'Registros Históricos',
+            current: 'Estado en tiempo real',
+            history: 'Datos de monitoreo',
+            viewHistory: 'Ver datos de monitoreo',
             notSupport: 'La versión actual o el controlador no admiten mostrar este parámetro.',
             processCount: 'Procesos',
         },
         mcp: {
             server: 'Servidor MCP',
-            baseUrl: 'Ruta de acceso externa',
-            baseUrlHelper: 'Por ejemplo: http://192.168.1.2:8000',
+            baseUrl: 'URL base',
+            baseUrlHelper: 'Por ejemplo: http://192.168.1.2:8000, sin la ruta MCP',
             ssePath: 'Ruta SSE',
             ssePathHelper: 'Por ejemplo: /sse, asegúrese de que no se repita con otros servidores',
-            environment: 'Variables de entorno',
-            envKey: 'Nombre de la variable',
-            envValue: 'Valor de la variable',
             externalUrl: 'Dirección de conexión externa',
             operatorHelper: 'Se realizará la operación {1} en {0}, ¿desea continuar?',
-            domain: 'Dirección de acceso predeterminada',
-            domainHelper: 'Por ejemplo: 192.168.1.1 o ejemplo.com',
             bindDomain: 'Vincular sitio web',
-            commandPlaceHolder: 'Actualmente solo se admiten comandos de inicio npx y binarios',
             importMcpJson: 'Importar configuración del servidor MCP',
             importMcpJsonError: 'La estructura de mcpServers es incorrecta',
             bindDomainHelper:
                 'Al vincular el sitio web, se modificará la dirección de acceso de todos los servidores MCP instalados y se cerrará el acceso externo a los puertos',
-            outputTransport: 'Tipo de salida',
-            streamableHttpPath: 'Ruta de transmisión',
+            outputTransport: 'Tipo de transporte',
+            streamableHttpPath: 'Ruta Streamable HTTP',
             streamableHttpPathHelper:
                 'Por ejemplo: /mcp, tenga en cuenta que no debe superponerse con otros servidores',
             npxHelper: 'Adecuado para mcp iniciado con npx o binario',
@@ -1736,18 +2095,179 @@ const message = {
             connectionSuccess: 'Conexión correcta',
             connectionFailed: 'Error de conexión',
         },
-        tensorRT: {
-            llm: 'TensorRT LLM',
-            modelDir: 'Directorio del Modelo',
-            commandHelper:
-                'Si se necesita acceso externo, establezca el puerto en el comando para que sea el mismo que el puerto de la aplicación',
-            imageAlert:
-                'Debido al gran tamaño de la imagen, se recomienda descargar manualmente la imagen al servidor antes de la instalación',
-            modelSpeedup: 'Habilitar aceleración de modelo',
-            modelType: 'Tipo de modelo',
+    },
+    panelMCP: {
+        accessTitle: 'Acceso a 1Panel MCP',
+        servicesTitle: 'Servicios MCP',
+        websiteCancelPendingBind: 'Cancelar vinculación',
+        websiteBinding: 'Vinculación de sitio web',
+        websiteBind: 'Vincular sitio web',
+        websiteBindRequested: 'Vincular un sitio tras la instalación',
+        websiteBound: 'Vinculado',
+        websiteUnbound: 'Sin vincular',
+        websitePending: 'Resultado pendiente',
+        websiteUnavailable: 'Vinculación no disponible',
+        websiteDomainInvalid: 'Introduzca un dominio válido, con un puerto opcional.',
+        websiteCertificateRequired: 'Seleccione un certificado válido que cubra este dominio.',
+        websiteCertificatesLoadFailed: 'No se pueden cargar los certificados. Actualice para reintentar.',
+        websiteCertificateEmpty: 'No hay un certificado coincidente. Solicite o importe uno.',
+        websiteUnbind: 'Desvincular y eliminar sitio web',
+        websiteUnbindConfirm:
+            '¿Desvincular y borrar el sitio y su directorio? Se conserva el certificado. Al volver a vincular se crea otro sitio.',
+        websiteUncertain: 'Resultado sin confirmar. Actualice el estado y reintente la solicitud original.',
+        websiteRetry: 'Reintentar operación pendiente',
+        websiteSettings: 'Configuración del sitio',
+        websiteCertificateUpdate: 'Cambiar certificado',
+        websiteStatusLoadFailed: 'No se puede leer el estado del vínculo. Actualice.',
+        websiteOperationFailed: 'Falló la operación del sitio. Revise su estado y configuración.',
+        websiteConflict: 'Cambió la configuración del vínculo. Actualice y revise.',
+        websiteBoundAddressHelp:
+            'La dirección se genera a partir del sitio vinculado. Adminístrela en la configuración del sitio.',
+        hideToken: 'Ocultar Token',
+        copyTokenFailed: 'No se pudo copiar el Token. Inténtelo de nuevo.',
+        exportFailed: 'No se pudo exportar la guía de conexión. Inténtelo de nuevo.',
+        rotateTokenFailed: 'No se pudo regenerar el Token. Inténtelo de nuevo.',
+        rotateTokenUncertain: 'Cambio de Token sin confirmar. Actualice y consulte el Token actual.',
+        allowedIPs: 'IP / CIDR permitidos',
+        allowedIPsPlaceholder: 'Una dirección IP o CIDR por línea; hasta 64 entradas',
+        allowedIPsInvalid:
+            'Hasta 64 IP/CIDR válidos, de hasta 64 caracteres. La lista restringida no puede estar vacía.',
+        accessPolicy: 'Política de origen de MCP',
+        accessInherit: 'Heredar la política de acceso del panel',
+        accessRestricted: 'Permitir solo las IP / CIDR indicadas',
+        accessAll: 'Permitir cualquier origen',
+        accessPolicyHelp:
+            'Controla las IP de origen sin modificar los permisos de las credenciales ni de los usuarios.',
+        accessAllConfirm: '¿Permitir que todas las IP de origen accedan a MCP?',
+        revealToken: 'Mostrar Token',
+        copyToken: 'Copiar Token',
+        rotateToken: 'Regenerar Token',
+        rotateTokenConfirm: '¿Regenerar este Token? El Token actual dejará de ser válido inmediatamente.',
+        tokenMemoryHelp: 'Proteja el Token y la guía de conexión.',
+        clientType: 'Cliente MCP',
+        genericClient: 'Cliente MCP genérico',
+        revealConfigHelp: 'Muestre el Token para generar la configuración del cliente.',
+        downloadGuide: 'Descargar guía de conexión (.md)',
+        alreadyCreated: 'Credencial creada. Consulte el Token en los detalles de conexión.',
+        nodes: 'Allowed nodes',
+        primaryNode: 'Primary node',
+        targetNode: 'Nodo de destino',
+        nodeNameUnavailable: 'Nombre del nodo no disponible',
+        selectNodes: 'Select at least one node.',
+        nodeGrantHelp: 'Se aplican permisos de nodo, herramienta y cuenta. Los nodos nuevos requieren autorización.',
+        nodeUnavailable: 'El nodo {0} no está disponible. Elimínelo antes de guardar.',
+        allCategories: 'Todas las categorías',
+        toolCategory: 'Categoría de herramientas',
+        selectedOnly: 'Solo seleccionadas',
+        bulkActions: 'Acciones por lotes',
+        toolDetails: 'Detalles',
+        hideToolDetails: 'Ocultar detalles',
+        outsideSelection: '{0} herramientas autorizadas están fuera de la vista actual',
+        selectionSummary: 'Solo lectura: {0} · Escritura: {1} · No disponibles: {2}',
+        unavailableSelected: '{0} herramientas autorizadas no están disponibles. Elimínelas antes de guardar.',
+        filteredTools: 'Matching: {0}',
+        toolFilter: 'Tool type',
+        allTools: 'All types',
+        selectVisible: 'Autorizar {0} herramientas coincidentes',
+        clearVisible: 'Revocar {0} herramientas coincidentes',
+        readOnlyVisible: 'Conservar solo lectura para {0} coincidencias',
+        bulkHelp:
+            'Las acciones incluyen coincidencias ocultas de todas las categorías e ignoran «Solo seleccionadas». Las herramientas nuevas requieren autorización.',
+        groupSelected: '{0} / {1} granted',
+        endpointUnavailable: 'Connection URL unavailable. Refresh or contact an administrator.',
+        internalEndpoint: 'Internal listening address',
+        internalEndpointHelp: 'Los clientes deben usar la URL de conexión.',
+        category: {
+            system: 'System',
+            website: 'Websites',
+            certificate: 'Certificates',
+            app: 'Applications',
+            database: 'Databases',
         },
+
+        title: '1Panel MCP',
+        credentials: 'Access credentials',
+        create: 'Create credential',
+        tools: 'Allowed tools',
+        searchTools: 'Buscar por nombre, descripción o ID',
+        selectedTools: 'Selected: {0} · Available: {1}',
+        noMatchingTools: 'No matching tools',
+        noTools: 'No tools granted',
+        readOnly: 'Read only',
+        write: 'Write',
+        writeHelp: 'Write tools modify server resources. Grant access as required.',
+        catalogUnavailable: 'Lista de herramientas no disponible. Revise el servicio y actualice.',
+        catalogEmpty: 'No tools available for authorization.',
+        catalogChanged: 'Lista de herramientas actualizada. Reabra el editor.',
+        grantsNeedReview: 'Es necesario volver a confirmar algunos permisos de herramientas.',
+        acceptToolPolicy: 'I have reviewed and confirmed the current tool authorization.',
+        removeGrant: 'Remove grant',
+        connection: 'Connection details',
+        endpoint: 'Connection URL',
+        clientConfig: 'Client configuration',
+        connectionHelp: 'Sustituya <MCP_TOKEN> en la configuración por el Token de la credencial.',
+        uncertain: 'Creación sin confirmar. Reintente en esta ventana o revise la lista antes de volver a crear.',
+        revokeConfirm: '¿Revocar «{0}»? Es irreversible y se rechazarán nuevas llamadas.',
+        deleteConfirm: '¿Eliminar «{0}»? Se invalidará de inmediato; se conserva el historial.',
+        disableConfirm: 'Disable credential “{0}”? New calls will be rejected.',
+        enableConfirm: 'Enable credential “{0}” with the current authorization?',
+        conflict: 'Los datos cambiaron. Recargue antes de enviar.',
+        invocations: 'Call records',
+        requestId: 'Request ID',
+        duration: 'Duration (ms)',
+        resultCode: 'Result code',
+        resultSuccess: 'Succeeded',
+        resultRunning: 'In progress / outcome unconfirmed',
+        resultDenied: 'Denied',
+        resultFailed: 'Failed',
+        allResults: 'Todos los estados',
+        serviceStatus: 'Service status',
+        statusUnknown: 'Unknown',
+        serviceUnsupported: 'This environment does not support 1Panel MCP deployment.',
+        serviceUnhealthy: 'Falló la comprobación del servicio. Revise registros y compatibilidad de versiones.',
+        statusUnsupported: 'Unsupported environment',
+        statusNotInstalled: 'Not installed',
+        statusStopped: 'Stopped',
+        statusRunning: 'Running',
+        statusUnhealthy: 'Unhealthy',
+        statusIncompatible: 'Incompatible version',
+        ready: 'Service ready',
+        installTitle: 'Install 1Panel MCP',
+        installEnable: 'Install and enable',
+        deleteOldImage: 'Eliminar imagen anterior',
+        deleteOldImageHelp:
+            'Tras actualizar correctamente, elimina la imagen anterior sin uso. Si la limpieza falla, la actualización se mantiene; consulte los registros de la tarea.',
+        installEmpty:
+            'El servicio 1Panel MCP aún no está instalado. Instálelo y actívelo para crear credenciales de acceso y llamar a las herramientas MCP.',
+        installWithCredentials: 'MCP no está instalado. Se conservan las credenciales; no se permiten llamadas.',
+        installTaskLog: 'Registro de instalación',
+        installNow: 'Instalar ahora',
+        upgradeTitle: 'Upgrade service',
+        serviceConfiguration: 'Service configuration',
+        imageUpgrade: 'Image upgrade',
+        reloadInstallConfirm: '¿Recargar y sobrescribir los ajustes sin guardar?',
+        serviceOperateConfirm: 'Confirm {0} for the 1Panel MCP service?',
+        serviceAdminOnly: 'Only super administrators can manage the MCP service.',
+        dockerImage: 'Docker image',
+        dockerImageInvalid: 'Introduzca una referencia de imagen Docker válida con una etiqueta o un resumen SHA-256.',
+        boundWebsiteHelp: 'Manage the bound website from the website list. Delete it to disable the proxy.',
+        containerName: 'Container name',
+        imageId: 'Image ID',
+        externalUrlHelp:
+            'Déjelo vacío para usar la URL del panel. Para un proxy inverso propio, indique su URL de acceso completa.',
+        invalidUrl: 'Introduzca una URL HTTP(S) válida sin credenciales, parámetros de consulta ni fragmento.',
+        listenPort: 'Local listening port',
+        listenPortInvalid: 'Enter an integer port from 1024 to 65535.',
+        logEmpty: 'No service logs',
+        statusUnavailable: 'Service status unavailable. Refresh to retry.',
     },
     benchmarkPlan: {
+        logAutoRefresh: 'Actualización automática',
+        logWindowHelp:
+            'Solo se muestran los registros recientes. Descargue el archivo seleccionado para ver todo el contenido.',
+        prefixTokens: 'Tokens de prefijo',
+        seed: 'Semilla aleatoria',
+        report: 'Informe',
         prepareTimeoutHelp: 'Límite de preparación, excluido del tiempo límite total.',
         pointTimeoutHelp:
             'Tiempo independiente por punto, con inicio, calentamiento y solicitudes; limitado por el tiempo total restante.',
@@ -1819,6 +2339,9 @@ const message = {
             'Varios escenarios, niveles de concurrencia y repeticiones, con entradas largas y prefijos compartidos.',
         customDescription: 'Empiece con un escenario, configure sus parámetros y añada más según necesite.',
         scenarios: 'Escenarios',
+        scenarioCount: 'Escenarios ({count} en total)',
+        scenarioHelp:
+            'Cada escenario define los tokens de entrada/salida, los niveles de concurrencia y los parámetros de las solicitudes. Los niveles se prueban en secuencia; cada nivel se ejecuta según el número de repeticiones configurado y cada ejecución genera un punto de medición.',
         builtIn: 'Integrado',
         builtInHelp: 'Los esquemas integrados no se pueden editar ni eliminar. Ajuste una copia al crear una prueba.',
         modified: 'Modificado',
@@ -1853,14 +2376,69 @@ const message = {
         retry: 'Repetir puntos seleccionados',
         environment: 'Entorno',
         plan: 'Configuración fijada',
-        clientHelp:
-            'El contenedor cliente se ejecuta en el nodo principal y envía solicitudes a un servicio existente. No inicia inferencia ni requiere GPU.',
         retryHelp: 'Solo se repiten los puntos anómalos seleccionados, con los mismos parámetros y nuevas semillas.',
         secretHelp: 'Las copias no incluyen claves API ni cabeceras. Vuelva a introducirlas si es necesario.',
         resultHelp:
             'La mediana y los mínimos/máximos solo incluyen ejecuciones correctas sin anomalías. P99 es la mediana de los P99 de cada ejecución. La caché y el tráfico externo no están controlados.',
     },
+    benchmarkSettings: {
+        imagePullHelp:
+            'La imagen {image} es grande y la descarga puede tardar, según la velocidad de la red. Puede configurar un espejo del registro para acelerar la descarga. Puede cerrar el diálogo de tareas; la descarga continuará en segundo plano. Consulte el progreso en el centro de tareas.',
+        settingsHelp:
+            'Prepare la imagen de Benchmark y un plan de prueba. Podrá crear una prueba de rendimiento cuando ambos estén listos.',
+        imageAvailable: 'La imagen de Benchmark está lista ({image})',
+        imageUnavailable: 'No se encontró la imagen de Benchmark ({image})',
+        retestServiceHelp:
+            'Las nuevas pruebas conservan los parámetros de la tarea. Confirme el servicio de modelos actual; las credenciales se obtienen del servicio seleccionado.',
+        prepareHelp: 'Antes de crear una prueba, prepare la imagen Benchmark y los planes de prueba en {settings}.',
+        image: 'Imagen de Benchmark',
+        ready: 'Listo',
+        unconfigured: 'Sin configurar',
+        checkFailed: 'Error de comprobación',
+        imageMissing: 'No se encontró la imagen requerida. Descargue {image} en la gestión de imágenes.',
+        imageReady: 'La imagen de Benchmark está lista para crear pruebas.',
+        imageHelp:
+            'La imagen de Benchmark ejecuta el cliente de carga y envía solicitudes al servicio de modelos seleccionado.',
+        mainNodeHelp: 'Las pruebas se ejecutan en el nodo principal. Prepare la imagen y el tokenizador en ese nodo.',
+        goImages: 'Ir a la gestión de imágenes',
+        goModels: 'Ir a las descargas de modelos',
+        tokenizerHelp:
+            'Seleccione un tokenizador del directorio de tokenizadores para codificar el texto de prueba y contar tokens.',
+        tokenizerEmpty:
+            'No hay modelos disponibles. Descargue un modelo que incluya archivos de tokenizador en las descargas de modelos.',
+        tokenizerEmptyWithDownload: 'No hay tokenizadores disponibles. Abra {download} para descargar uno.',
+        tokenizerInvalid: 'Este tokenizador no está disponible. Seleccione otro o descárguelo de nuevo.',
+        schemeHelp:
+            'Los planes de prueba definen los parámetros de solicitud, la concurrencia y las reglas de ejecución. Prepare al menos un plan disponible.',
+        schemeEmpty: 'No hay planes de prueba disponibles. Cree uno primero.',
+        manageSchemes: 'Gestionar planes de prueba',
+        selectService: 'Seleccione un servicio de modelos',
+        serviceHelp: 'Seleccione un servicio y ajuste la URL si es necesario.',
+        noServices: 'No hay servicios de modelos disponibles. Añada uno primero.',
+        goModelServices: 'Ir a los servicios de modelos',
+        serviceUnsupported: 'Aún no compatible',
+        unsupportedProtocol:
+            'Este protocolo de API no es compatible: {0}. Seleccione un servicio de modelos que use OpenAI Chat Completions.',
+        unsupportedAuth:
+            'Este método de autenticación no es compatible: {0}. Seleccione un servicio que use autenticación Bearer.',
+        serviceModelsMissing:
+            'Este servicio no tiene modelos configurados. Añada modelos en la gestión de servicios de modelos.',
+        prerequisitesTitle: 'Complete primero los ajustes de la prueba',
+        prerequisitesMissing: 'Los siguientes requisitos no están listos: {0}. Complételos en los ajustes.',
+        precheckFailed:
+            'No se pudieron comprobar los requisitos de la prueba. Abra los ajustes y vuelva a comprobarlos.',
+        goSettings: 'Ir a los ajustes',
+    },
     benchmarkOverview: {
+        comparison: 'Comparación de escenarios y concurrencia',
+        comparisonHelp: 'Haz clic en un escenario para ver los detalles de esa combinación.',
+        sharedPrefix: 'Proporción de prefijo compartido',
+        sharedPrefixHelp:
+            'Tokens de prefijo configurados respecto a la longitud de entrada; no es una tasa medida de aciertos de caché.',
+        singleRequestThroughput: 'Rendimiento de salida por solicitud',
+        singleRequestThroughputHelp:
+            'Tokens de salida de solicitudes exitosas divididos por su tiempo total de extremo a extremo, incluida la espera del primer token, en cada ejecución. Se muestra la mediana de las ejecuciones válidas, o — si faltan datos.',
+        aggregateOutputThroughput: 'Rendimiento total de salida',
         noResults: 'No hay resultados válidos. Consulte la causa del fallo y los registros.',
         noGroupResults: 'Esta combinación no tiene resultados válidos. Seleccione otro escenario o concurrencia.',
         partial: 'Resultados parciales: la prueba no se completó con éxito. Solo se incluyen puntos válidos.',
@@ -1884,20 +2462,64 @@ const message = {
         latency: 'Latencia',
         usage: 'Solicitudes y uso (ejecuciones válidas)',
     },
+    modelDownloadExtra: {
+        downloadModel: 'Descargar modelo',
+        downloadTokenizer: 'Descargar tokenizador',
+        onlineDownload: 'Descarga en línea',
+        content: 'Contenido de descarga',
+        deleteFiles: 'Eliminar también {0}',
+        deleteFilesPath: 'Eliminar archivos de {0}: {1}',
+    },
     benchmarkTokenizer: {
         title: 'Gestión de tokenizadores',
-        local: 'Registrar directorio local',
-        upload: 'Subir paquete de tokenizador',
         uploadHelp: 'Suba un ZIP / tar.gz sin pesos del modelo. Máximo: 128 MiB comprimido y 256 MiB extraído.',
-        source: 'Método de importación',
-        deleteLocal:
-            '¿Quitar el registro del tokenizador «{0}»? Se conservarán el directorio y los archivos originales.',
-        deleteUpload: '¿Eliminar el tokenizador «{0}» y sus archivos subidos? Se conservarán los informes anteriores.',
         select: 'Seleccionar un tokenizador',
         selectHelp:
             'Para pruebas sin conexión, seleccione un tokenizador gestionado. La entrada personalizada admite directorios locales o nombres de repositorios.',
+        deleteFilesHelp:
+            'Al seleccionar esta opción, también se eliminarán permanentemente el directorio {0} y todos sus archivos.',
+        deleteNameConfirm: 'Introduzca el nombre del tokenizador para confirmar la eliminación: ',
+        deleteDirectoryWarning:
+            'Este tokenizador hace referencia a un directorio existente. Al eliminar los archivos, se eliminará todo el directorio y su contenido, incluidos los archivos del modelo. Para eliminar solo el registro del tokenizador, desmarque la casilla.',
+        deleteWarning: 'Eliminar los archivos puede hacer fallar las pruebas que estén usando este tokenizador.',
+        exists: 'Existe',
+        missing: 'No existe',
     },
     container: {
+        nvidiaSupport: 'Compatibilidad con GPU NVIDIA',
+        nvidiaHelper:
+            'Registra el entorno de ejecución de NVIDIA. Instala primero NVIDIA Container Toolkit. Asigna las GPU a cada contenedor por separado.',
+        nvidiaLocalOnly: 'Solo se admite el socket predeterminado de Docker local.',
+        nvidiaChangeHelper:
+            'Al desactivar, los contenedores que usan el entorno de NVIDIA podrían no iniciarse. Este interruptor no bloquea el acceso a la GPU.',
+        imageRemoteSearch: 'Búsqueda remota',
+        imageRemoteSearchHelper: 'Solo se pueden buscar imágenes de repositorios de Docker Hub',
+        imageRemoteSearchProxyRequired:
+            'Para buscar imágenes remotas en el entorno actual, configura primero un servidor proxy.',
+        batchUpgrade: 'Batch upgrade',
+        batchUpgradeLog: 'View log',
+        batchUpgradeCheck: 'Check task',
+        batchUpgradeRetry: 'Retry failed submissions',
+        batchUpgradeSubmitting: 'Submitting',
+        batchUpgradeSubmitFailed: 'Submission failed',
+        batchUpgradeUnknown: 'Submission unconfirmed; check the task before resubmitting',
+        batchUpgradeCanceled: 'Canceled',
+        batchUpgradeWaiting: 'Queued',
+        batchUpgradeRunning: 'Upgrading',
+        batchUpgradeSubmitted: 'Upgrade task submitted',
+        imageCheckUpdateProxyRequired:
+            'Para comprobar actualizaciones de imágenes en el entorno actual, configura primero un servidor proxy.',
+        imageCheckUpdateConfigureProxy: 'Configurar',
+        imageCheckUpdateAvailableVersion: 'Versión disponible «{version}»',
+        imageCheckUpdateContentChanged: '(el contenido de la imagen ha cambiado)',
+        imageCheckUpdates: 'Buscar actualizaciones de imágenes',
+        imageCheckUpdateNow: 'Comprobar ahora',
+        imageCheckUpdateSchedule: 'Comprobación programada',
+        imageCheckUpdateDisable: 'Desactivar comprobación programada',
+        imageCheckUpdateStarted: 'Buscando actualizaciones de las imágenes de todos los contenedores de este nodo',
+        imageCheckUpdateResult:
+            'Comprobación finalizada: comprobados {checked}, actualizables {updates}, fallidos {failed}, omitidos {skipped}',
+
         createByCommand: 'Crear por comando',
         importContainerBackupTip: 'Importar archivo de copia de seguridad de contenedor, solo se admite .tar.gz',
         importComposeBackupTip: 'Importar archivo de copia de seguridad de compose, solo se admite .tar.gz',
@@ -2356,6 +2978,8 @@ const message = {
         library: {
             script: 'Script',
             syncNow: 'Sincronizar Ahora',
+            autoSyncHelper:
+                'La sincronización automática actualiza los scripts del sistema cada madrugada sin afectar a los personalizados. También puedes sincronizar manualmente en cualquier momento.',
             turnOnSync: 'Activar Sincronización Automática',
             turnOnSyncHelper:
                 'Activar la sincronización automática realizará sincronizaciones automáticas durante las primeras horas de la madrugada diariamente',
@@ -2550,7 +3174,7 @@ const message = {
         scrollSensitivity: 'Sensibilidad de scroll',
         aiAssistant: 'Asistente de IA',
         aiAccountHelper:
-            'Use la cuenta de modelo seleccionada para generar y rellenar comandos. Para modelos locales como Ollama y vLLM, use una cuenta de modelo personalizada.',
+            'Use el servicio de modelo seleccionado para generar y rellenar comandos. Para modelos locales como Ollama y vLLM, use un servicio de modelo personalizado.',
         aiPrefix: 'Prefijo de activación',
         aiPrefixHelper:
             'Introduzca "prefijo + espacio" y pulse Enter para activar la generación de comandos por IA; por ejemplo: {0} ayúdame a consultar la información del disco.',
@@ -2724,7 +3348,7 @@ const message = {
         detail: {
             dashboard: 'Resumen general',
             ai: 'IA',
-            skills_hub: 'Skills Hub',
+            skills_hub: 'Repositorio de Skills',
             ai_proxy: 'Proxy de IA',
             ai_benchmark: 'Benchmark',
             groups: 'Grupo',
@@ -2795,7 +3419,7 @@ const message = {
         aiSearchHint:
             'Busca el contenido del archivo línea por línea. Usa los botones a la derecha de la fila de búsqueda y las "Condiciones avanzadas" debajo. Cuando la cuenta de IA esté activada y guardada, también se podrá generar un resumen en Markdown.',
         aiSearchAccountTitle: 'Cuenta de IA',
-        aiSearchAccountIntro: 'Elige una cuenta de modelo grande para generar resúmenes y guarda los cambios.',
+        aiSearchAccountIntro: 'Elige un servicio de modelo grande para generar resúmenes y guarda los cambios.',
         aiSearchAccountEnable: 'Activar búsqueda de IA en archivos',
         aiSearchSaveAccount: 'Guardar configuración de la cuenta',
         aiSearchSectionQuery: 'Búsqueda',
@@ -3418,6 +4042,9 @@ const message = {
             'Si un proveedor de nube es compatible con el protocolo S3, puedes usar Amazon S3 directamente para el respaldo. ',
         domain: 'Dominio de aceleración',
         backupAccount: 'Cuenta de respaldo | Cuentas de respaldo',
+        backupCACert: 'Certificado CA (PEM)',
+        backupCACertHelp:
+            'Déjelo vacío para usar las CA del sistema. Para almacenamiento HTTPS propio, pegue su certificado CA. La verificación de certificados permanece activa.',
         loadBucket: 'Obtener bucket',
         accountName: 'Nombre de la cuenta',
         accountKey: 'Clave de la cuenta',
@@ -3753,19 +4380,26 @@ const message = {
         setting: 'Actualizar a la edición comercial permite personalizar logo, mensaje de bienvenida y más.',
         monitor: 'La edición comercial permite ver estado web en tiempo real, tendencias, logs, etc.',
         alert: 'La edición comercial permite recibir alertas SMS y ver logs, control total de eventos clave.',
-        vm: 'Actualice a la edición comercial para gestionar máquinas virtuales, imágenes, plantillas, redes virtuales y recursos de almacenamiento en 1Panel.',
         node: 'Actualizar a la edición comercial permite administrar varios servidores Linux con 1Panel.',
         nodeApp:
             'Actualizar a la edición comercial permite actualizar versiones de aplicaciones multinodo sin cambiar de nodo manualmente.',
         nodeDashboard:
             'Actualizar a la edición comercial permite la gestión centralizada de aplicaciones, sitios web, bases de datos y tareas programadas multinodo.',
+        imageExchange:
+            'Actualiza a la Edición Comercial para transferir imágenes de contenedores por lotes entre nodos.',
+        appExchange:
+            'Actualiza a la Edición Comercial para migrar aplicaciones instaladas a nodos de destino y confirmar sus dependencias de recursos.',
+        sslSync:
+            'Actualiza a la Edición Comercial para sincronizar certificados de un nodo de origen con uno o varios nodos de destino.',
+        phpExtensionsSync:
+            'Actualiza a la Edición Comercial para sincronizar plantillas de extensiones PHP con uno o varios nodos de destino.',
         fileExchange: 'La edición comercial permite transferir archivos entre varios servidores.',
         app: 'La edición comercial permite ver información de servicio, monitoreo, etc. vía app móvil.',
         cluster:
             'Actualizar a la edición comercial permite gestionar clústeres primario-réplica de MySQL/Postgres/Redis.',
-        vllm: 'Actualiza a la edición comercial para gestionar servicios vLLM en 1Panel con despliegue, configuración, operaciones del ciclo de vida y seguimiento de tareas centralizados.',
+        vllm: 'Actualiza a la edición comercial para desplegar vLLM, monitorizar servicios, consultar registros y gestionar las operaciones diarias desde un solo lugar.',
         'model-downloader':
-            'Actualiza a la edición comercial para buscar, descargar y gestionar archivos de modelos locales desde HuggingFace, ModelScope o espejos compatibles, con directorios de modelos y tareas de descarga centralizados.',
+            'Actualiza a la edición comercial para explorar modelos destacados, gestionar descargas, reutilizar vLLM Recipes y configurar los orígenes de descarga y las credenciales de acceso.',
         offLine: 'Sin conexión',
     },
     clean: {
@@ -4373,6 +5007,7 @@ const message = {
         brotliCompLevelHelper: 'Tasa de compresión brotli, de 0 a 11',
         brotliManagedExternallyHelper:
             'Brotli está configurado manualmente en nginx.conf; el panel muestra los valores en vigor y no los sobrescribe.',
+        brotliManagedPendingHelper: 'La configuración de brotli aún no está en vigor; se aplicará al guardar.',
         brotliManagedUnavailableHelper:
             'El panel no pudo añadir automáticamente la configuración brotli gestionada a nginx.conf; los valores siguientes no tendrán efecto.',
         brotliMinLengthHelper: 'Tamaño mínimo de respuesta para comprimir con brotli',
@@ -4429,6 +5064,7 @@ const message = {
             'Habilitar esto puede evitar la fuga de certificados, establecer un sitio web predeterminado invalidará esta configuración',
     },
     ssl: {
+        caUploadHelp: 'Upload the downloaded ZIP containing ca.crt and ca.key (up to 10 MB).',
         deleteConfirm:
             'Se eliminarán los siguientes certificados. Los certificados ACME se revocarán automáticamente. ¿Desea continuar?',
         deleteAndRevoke: 'Eliminar y revocar',
@@ -4815,8 +5451,6 @@ const message = {
         customScriptHelper:
             'Por favor, ingresa el comando de inicio completo, por ejemplo: npm run start. Para comandos de inicio de PM2, por favor reemplaza con pm2-runtime, de lo contrario fallará al iniciar.',
         portError: 'No repitas el mismo puerto.',
-        systemRestartHelper:
-            'Descripción de estado: Interrupción - fallo al obtener estado debido a reinicio del sistema',
         javaScriptHelper:
             'Proporciona un comando de inicio completo. Ejemplo: "java -jar halo.jar -Xmx1024M -Xms256M".',
         javaDirHelper: 'El directorio debe contener archivos .jar, se permiten subdirectorios',
@@ -6822,6 +7456,41 @@ const message = {
             nodeContent3: 'Supervisa en tiempo real el estado operativo de cada nodo',
             nodeTitle4: 'Conexión Remota Rápida',
             nodeContent4: 'Conecta directamente a la terminal remota de un nodo con un clic',
+            imageExchangeTitle1: 'Seleccionar imágenes de origen',
+            imageExchangeContent1:
+                'Consulta las imágenes de contenedores del nodo de origen y selecciona las que quieras transferir.',
+            imageExchangeTitle2: 'Distribuir imágenes',
+            imageExchangeContent2: 'Transfiere las imágenes seleccionadas a uno o varios nodos de destino.',
+            imageExchangeTitle3: 'Ver registros de transferencia',
+            imageExchangeContent3:
+                'Consulta el progreso y los resultados de la transferencia de imágenes en los registros de tareas.',
+            appExchangeTitle1: 'Seleccionar una aplicación',
+            appExchangeContent1:
+                'Consulta las aplicaciones instaladas en el nodo de origen y selecciona una para migrarla.',
+            appExchangeTitle2: 'Confirmar dependencias',
+            appExchangeContent2:
+                'Antes de migrar, confirma los nodos de destino y los recursos necesarios, como las bases de datos.',
+            appExchangeTitle3: 'Migrar aplicaciones',
+            appExchangeContent3:
+                'Transfiere las copias de seguridad de las aplicaciones a los nodos de destino para restaurarlas y consulta los resultados en los registros de tareas.',
+            sslSyncTitle1: 'Seleccionar certificados',
+            sslSyncContent1:
+                'Consulta los detalles de los certificados del nodo de origen y selecciona los que quieras sincronizar.',
+            sslSyncTitle2: 'Sincronizar entre nodos',
+            sslSyncContent2:
+                'Sincroniza los certificados seleccionados con los nodos de destino, excluyendo automáticamente el nodo de origen.',
+            sslSyncTitle3: 'Confirmar tareas de sincronización',
+            sslSyncContent3:
+                'Revisa los nodos de destino y los certificados antes de ejecutar la tarea y consulta los resultados en los registros de tareas.',
+            phpExtensionsSyncTitle1: 'Seleccionar una plantilla',
+            phpExtensionsSyncContent1:
+                'Consulta los nombres de las plantillas y sus listas de extensiones en el nodo de origen y selecciona una plantilla para sincronizarla.',
+            phpExtensionsSyncTitle2: 'Sincronizar plantillas',
+            phpExtensionsSyncContent2:
+                'Sincroniza la plantilla seleccionada con los nodos de destino, excluyendo automáticamente el nodo de origen.',
+            phpExtensionsSyncTitle3: 'Comprobar plantillas existentes',
+            phpExtensionsSyncContent3:
+                'Se omiten las plantillas con el mismo nombre y contenido. Si el contenido es diferente, se informa del conflicto sin sobrescribirlo.',
             fileExchangeTitle1: 'Transmisión con Autenticación por Claves',
             fileExchangeContent1: 'Autenticación vía claves SSH para garantizar seguridad en la transmisión.',
             fileExchangeTitle2: 'Sincronización de Archivos Eficiente',
@@ -6850,30 +7519,27 @@ const message = {
             clusterTitle3: 'Estado de Replicación',
             clusterContent3:
                 'Muestra estado de replicación maestro-esclavo y retrasos, ayudando a diagnosticar problemas de sincronización',
-            modelDownloaderTitle1: 'Descubrimiento de modelos',
+            modelDownloaderTitle1: 'Modelos destacados',
             modelDownloaderContent1:
-                'Busca repositorios de modelos de HuggingFace directamente y consulta descargas, me gusta, detalles y archivos.',
-            modelDownloaderTitle2: 'Descargas aceleradas',
+                'Explora modelos destacados, filtra por familia y proveedor de pesos, consulta los detalles e inicia descargas.',
+            modelDownloaderTitle2: 'Descarga de modelos',
             modelDownloaderContent2:
-                'Configura un endpoint de aceleración de HuggingFace y HF Token para el sitio oficial, espejos y modelos privados.',
-            modelDownloaderTitle3: 'Seguimiento de tareas',
+                'Descarga modelos de Hugging Face y ModelScope, consulta el progreso, cancela o reintenta tareas y gestiona los archivos locales.',
+            modelDownloaderTitle3: 'vLLM Recipes',
             modelDownloaderContent3:
-                'Consulta la cola, el estado, el progreso y los errores de descarga, con soporte para cancelar, reintentar y limpiar registros.',
-            modelDownloaderTitle4: 'Gestión local',
+                'Explora y sincroniza Recipes oficiales, gestiona recetas personalizadas y reutiliza parámetros de despliegue compatibles con cada modelo.',
+            modelDownloaderTitle4: 'Configuración',
             modelDownloaderContent4:
-                'Gestiona directorios de modelos locales en un solo lugar, incluyendo rutas, tamaños, fechas y eliminación de modelos no usados.',
-            vllmTitle1: 'Gestión centralizada',
+                'Configura el directorio de descarga, las direcciones de origen, los tokens de acceso y la sincronización automática de modelos destacados.',
+            vllmTitle1: 'Despliegue de modelos',
             vllmContent1:
-                'Centralice la gestión de instancias vLLM distribuidas y supervise versiones, estado de ejecución y directorios de trabajo desde una única plataforma.',
-            vllmTitle2: 'Despliegue rápido',
+                'Selecciona el directorio del modelo y la imagen del contenedor, configura GPU, puertos y parámetros de inicio, y crea instancias de vLLM.',
+            vllmTitle2: 'Monitorización del servicio',
             vllmContent2:
-                'Configure y despliegue servicios vLLM en minutos mediante formularios visuales, sin necesidad de complejas operaciones manuales.',
-            vllmTitle3: 'Operación eficiente',
+                'Consulta el estado de las instancias, el número de solicitudes, el rendimiento y la latencia del servicio de modelos.',
+            vllmTitle3: 'Operaciones diarias',
             vllmContent3:
-                'Realice la creación, edición, inicio, detención, reinicio y eliminación de instancias desde una sola interfaz para simplificar la operación diaria.',
-            vllmTitle4: 'Control avanzado',
-            vllmContent4:
-                'Personalice puertos, contenedores, comandos de arranque y archivos Compose con opciones avanzadas para lograr implementaciones más flexibles y estandarizadas.',
+                'Inicia, detén, reinicia y elimina instancias, consulta registros, abre terminales y realiza el seguimiento de las tareas.',
         },
         node: {
             master: 'Nodo Principal',
@@ -6891,6 +7557,13 @@ const message = {
                 'Los nodos seleccionados comenzarán a actualizarse automáticamente después de que se complete la actualización del nodo maestro, sin necesidad de operación manual.',
             nodeUpgradePackageManage: 'Gestión de Paquetes de Instalación',
             nodeUpgradePackageClean: 'Limpiar',
+            packageSource: 'Origen del paquete',
+            packageFromMaster: 'Nodo principal',
+            packageFromNode: 'Paquete existente',
+            packagePath: 'Ruta del paquete en el nodo secundario',
+            packagePathHelper:
+                'Introduzca la ruta absoluta de un paquete .tar.gz en el nodo secundario. La versión debe coincidir con el nodo principal y la arquitectura con el nodo secundario. Se conserva el paquete original; los archivos auxiliares que falten se transfieren desde el nodo principal.',
+            packagePathInvalid: 'Introduzca una ruta absoluta al archivo del paquete en el nodo secundario',
             nodeUpgradePackageFormatHelper:
                 'Solo se admiten paquetes de instalación `1panel-agent_v*_*` o `1panel-v*-linux-*`',
             nodeUpgradePackageHostConfirm: 'Se seleccionará el archivo del servidor {0}. ¿Continuar?',
@@ -7333,6 +8006,14 @@ const message = {
             imageBatchConfirmPrefix: 'Se enviarán {0} imágenes a {1} nodos, creando {2} tareas.',
 
             ssl: 'Sincronización de certificados',
+            phpExtensions: 'Sincronización de plantillas de extensiones PHP',
+            phpExtensionsTitle: 'Sincronización de plantillas de extensiones',
+            phpExtensionsDesc:
+                'Selecciona un nodo de origen para sincronizar su plantilla de extensiones PHP con los nodos de destino.',
+            phpExtensionsList: 'Extensiones PHP',
+            phpExtensionsConfirm: 'Se sincronizarán {0} plantillas de extensiones PHP con {1} nodos.',
+            phpExtensionsConflictHint:
+                'Se omiten las plantillas idénticas. Las plantillas con el mismo nombre y contenido diferente se notifican como conflictos y no se sobrescriben.',
             sslBatchDesc:
                 'Después de seleccionar el nodo de origen, los certificados especificados pueden sincronizarse con el entorno actual del panel.',
             sslBatchConfirmPrefix: 'Se sincronizarán {0} certificados a {1} nodos, creando {2} tareas.',
@@ -7364,8 +8045,7 @@ const message = {
             submitSuccess: 'La tarea de sincronización se ha enviado correctamente.',
         },
         vm: {
-            countLimitHelper:
-                'La edición Professional permite crear hasta {0} máquinas virtuales. Enterprise no limita la cantidad.',
+            countLimitHelper: 'La edición actual permite crear hasta {0} máquinas virtuales.',
             vm: 'Máquina virtual',
             title: 'Gestión de máquinas virtuales',
             healthCheck: 'Comprobación de estado',

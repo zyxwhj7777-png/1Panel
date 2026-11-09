@@ -1,4 +1,4 @@
-import http from '@/api';
+import http, { type RequestConfig } from '@/api';
 import { ReqPage, ResPage } from '../interface';
 import { Website } from '../interface/website';
 import { File } from '../interface/file';
@@ -124,8 +124,8 @@ export const listSSL = (req: Website.SSLReq) => {
     return http.post<Website.SSLDTO[]>(`/websites/ssl/list`, req);
 };
 
-export const listLocalNodeSSL = (req: Website.SSLReq) => {
-    return http.postLocalNode<Website.SSLDTO[]>(`/websites/ssl/list`, req);
+export const listLocalNodeSSL = (req: Website.SSLReq, config?: RequestConfig) => {
+    return http.postLocalNode<Website.SSLDTO[]>(`/websites/ssl/list`, req, undefined, config);
 };
 
 export const createSSL = (req: Website.SSLCreate) => {
@@ -450,4 +450,19 @@ export const deleteTemplateOutput = (params: { id: number }) => {
 
 export const getTemplateOutput = (id: number) => {
     return http.post<Website.TemplateOutputDTO>(`/websites/templates/outputs/get`, { id });
+};
+
+export const uploadCA = (params: FormData) => {
+    return http.upload(`/websites/ca/upload`, params);
+};
+
+export const importCA = (params: {
+    name: string;
+    type: 'paste' | 'local';
+    certificate?: string;
+    privateKey?: string;
+    certificatePath?: string;
+    privateKeyPath?: string;
+}) => {
+    return http.post(`/websites/ca/import`, params);
 };

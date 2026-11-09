@@ -21,13 +21,16 @@ type InspectReq struct {
 }
 
 type ContainerInfo struct {
-	ContainerID string `json:"containerID"`
-	Name        string `json:"name"`
-	ImageId     string `json:"imageID"`
-	ImageName   string `json:"imageName"`
-	CreateTime  string `json:"createTime"`
-	State       string `json:"state"`
-	RunTime     string `json:"runTime"`
+	LatestVersion string `json:"latestVersion"`
+	TargetImage   string `json:"targetImage"`
+	HasUpdate     bool   `json:"hasUpdate"`
+	ContainerID   string `json:"containerID"`
+	Name          string `json:"name"`
+	ImageId       string `json:"imageID"`
+	ImageName     string `json:"imageName"`
+	CreateTime    string `json:"createTime"`
+	State         string `json:"state"`
+	RunTime       string `json:"runTime"`
 
 	Network []string `json:"network"`
 	Ports   []string `json:"ports"`
@@ -171,7 +174,8 @@ type ContainerItemStats struct {
 	BuildCacheReclaimable int64 `json:"buildCacheReclaimable"`
 }
 type ContainerListStats struct {
-	ContainerID string `json:"containerID"`
+	ContainerID   string `json:"containerID"`
+	ContainerName string `json:"containerName"`
 
 	CPUTotalUsage uint64  `json:"cpuTotalUsage"`
 	SystemUsage   uint64  `json:"systemUsage"`

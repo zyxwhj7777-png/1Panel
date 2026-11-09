@@ -31,6 +31,34 @@
                 <el-button v-permission type="primary" plain @click="onClean()">
                     {{ $t('container.containerPrune') }}
                 </el-button>
+                <el-dropdown v-permission trigger="click" @command="onImageCheckUpdateCommand">
+                    <el-button type="primary" plain :loading="imageCheckUpdateBusy">
+                        {{ $t('container.imageCheckUpdates') }}
+                        <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+                    </el-button>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item
+                                command="check"
+                                :disabled="imageCheckUpdateBusy || imageCheckUpdateStatus?.running"
+                            >
+                                {{ $t('container.imageCheckUpdateNow') }}
+                            </el-dropdown-item>
+                            <el-dropdown-item
+                                command="schedule"
+                                :disabled="imageCheckUpdateBusy || !imageCheckUpdateStatus"
+                            >
+                                {{
+                                    $t(
+                                        imageCheckUpdateStatus?.enabled
+                                            ? 'container.imageCheckUpdateDisable'
+                                            : 'container.imageCheckUpdateSchedule',
+                                    )
+                                }}
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
             </template>
             <template #rightToolBar>
                 <TableViewSwitch v-model="viewMode" storage-key="container" />
@@ -57,6 +85,7 @@
             <template #main>
                 <ComplexTable
                     :selection-context="() => [searchName, activeTag, includeAppStore, props.filters]"
+                    :cache-pagination="false"
                     :pagination-config="paginationConfig"
                     v-model:view-mode="viewMode"
                     v-model:selects="selects"
@@ -177,73 +206,40 @@
                         min-width="120"
                     >
                         <template #default="{ row }">
-                            <div v-if="row.hasLoad">
-                                <div class="source-font">CPU: {{ row.cpuPercent.toFixed(2) }}%</div>
-                                <div class="float-left source-font">
-                                    {{ $t('monitor.memory') }}: {{ row.memoryPercent.toFixed(2) }}%
-                                </div>
-                                <el-popover placement="right" width="500px" class="float-right">
-                                    <template #reference>
-                                        <svg-icon iconName="p-xiangqing" className="resource-detail-icon"></svg-icon>
+                            <span v-if="row.state !== 'running'">—</span>
+                            <ContainerResource v-else-if="row.hasLoad" :stats="row">
+                                <el-descriptions-item v-if="row.hasLoadSize">
+                                    <template #label>
+                                        {{ $t('container.sizeRw') }}
+                                        <el-tooltip :content="$t('container.sizeRwHelper')">
+                                            <el-icon class="icon-item"><InfoFilled /></el-icon>
+                                        </el-tooltip>
                                     </template>
-                                    <template #default>
-                                        <el-descriptions direction="vertical" border :column="3" size="small">
-                                            <el-descriptions-item :label="$t('container.cpuUsage')">
-                                                {{ computeCPU(row.cpuTotalUsage) }}
-                                            </el-descriptions-item>
-                                            <el-descriptions-item :label="$t('container.cpuTotal')">
-                                                {{ computeCPU(row.systemUsage) }}
-                                            </el-descriptions-item>
-                                            <el-descriptions-item :label="$t('container.core')">
-                                                {{ row.percpuUsage }}
-                                            </el-descriptions-item>
-
-                                            <el-descriptions-item :label="$t('container.memUsage')">
-                                                {{ computeSizeForDocker(row.memoryUsage) }}
-                                            </el-descriptions-item>
-                                            <el-descriptions-item :label="$t('container.memCache')">
-                                                {{ computeSizeForDocker(row.memoryCache) }}
-                                            </el-descriptions-item>
-                                            <el-descriptions-item :label="$t('container.memTotal')">
-                                                {{ computeSizeForDocker(row.memoryLimit) }}
-                                            </el-descriptions-item>
-                                            <el-descriptions-item v-if="row.hasLoadSize">
-                                                <template #label>
-                                                    {{ $t('container.sizeRw') }}
-                                                    <el-tooltip :content="$t('container.sizeRwHelper')">
-                                                        <el-icon class="icon-item"><InfoFilled /></el-icon>
-                                                    </el-tooltip>
-                                                </template>
-                                                {{ computeSize2(row.sizeRw) }}
-                                            </el-descriptions-item>
-                                            <el-descriptions-item
-                                                :label="$t('container.sizeRootFs')"
-                                                v-if="row.hasLoadSize"
-                                            >
-                                                <template #label>
-                                                    {{ $t('container.sizeRootFs') }}
-                                                    <el-tooltip :content="$t('container.sizeRootFsHelper')">
-                                                        <el-icon class="icon-item"><InfoFilled /></el-icon>
-                                                    </el-tooltip>
-                                                </template>
-                                                {{ computeSize2(row.sizeRootFs) }}
-                                            </el-descriptions-item>
-                                        </el-descriptions>
-
-                                        <el-button
-                                            class="mt-2"
-                                            v-if="!row.hasLoadSize"
-                                            size="small"
-                                            link
-                                            type="primary"
-                                            @click="loadSize(row)"
-                                        >
-                                            {{ $t('container.loadSize') }}
-                                        </el-button>
+                                    {{ computeSize2(row.sizeRw) }}
+                                </el-descriptions-item>
+                                <el-descriptions-item :label="$t('container.sizeRootFs')" v-if="row.hasLoadSize">
+                                    <template #label>
+                                        {{ $t('container.sizeRootFs') }}
+                                        <el-tooltip :content="$t('container.sizeRootFsHelper')">
+                                            <el-icon class="icon-item"><InfoFilled /></el-icon>
+                                        </el-tooltip>
                                     </template>
-                                </el-popover>
-                            </div>
-                            <div v-if="!row.hasLoad">
+                                    {{ computeSize2(row.sizeRootFs) }}
+                                </el-descriptions-item>
+                                <template #footer>
+                                    <el-button
+                                        class="mt-2"
+                                        v-if="!row.hasLoadSize"
+                                        size="small"
+                                        link
+                                        type="primary"
+                                        @click="loadSize(row)"
+                                    >
+                                        {{ $t('container.loadSize') }}
+                                    </el-button>
+                                </template>
+                            </ContainerResource>
+                            <div v-else>
                                 <el-button link loading></el-button>
                             </div>
                         </template>
@@ -312,7 +308,7 @@
                                     :key="item"
                                     :hide-after="20"
                                     :content="item"
-                                    placement="top"
+                                    v-bind="TABLE_TOOLTIP_OPTIONS"
                                 >
                                     <el-button
                                         v-if="item.indexOf('->') !== -1"
@@ -389,6 +385,7 @@
                                         @change="toggleSelection"
                                     ></el-checkbox>
                                 </template>
+                                <el-option :label="$t('commons.button.upgrade')" value="upgrade" />
                                 <el-option
                                     :label="$t('container.start')"
                                     value="start"
@@ -451,7 +448,12 @@
                         <el-checkbox border v-model="showIPv6Ports">IPv6</el-checkbox>
                     </div>
                     <div v-if="filteredPorts.length" class="container-port-dialog">
-                        <el-tooltip v-for="item in filteredPorts" :key="item" :content="item" placement="top">
+                        <el-tooltip
+                            v-for="item in filteredPorts"
+                            :key="item"
+                            :content="item"
+                            v-bind="TABLE_TOOLTIP_OPTIONS"
+                        >
                             <el-button
                                 :icon="item.indexOf('->') !== -1 ? 'Position' : undefined"
                                 plain
@@ -488,6 +490,7 @@
 </template>
 
 <script lang="ts" setup>
+import { TABLE_TOOLTIP_OPTIONS } from '@/components/table/shared';
 import { useSearchState } from '@/utils/search-reset';
 import PruneDialog from '@/views/container/container/prune/index.vue';
 import RenameDialog from '@/views/container/container/rename/index.vue';
@@ -504,8 +507,14 @@ import Uploads from '@/components/upload/index.vue';
 import DockerStatus from '@/views/container/docker-status/index.vue';
 import ContainerLogDialog from '@/components/log/container-drawer/index.vue';
 import Status from '@/components/status/index.vue';
-import { toRef, computed, reactive, ref } from 'vue';
+import { toRef, computed, onMounted, onActivated, onBeforeUnmount, onDeactivated, reactive, ref, watch } from 'vue';
+import { showImageProxyRequired, isRuntimeProxyRequired } from '@/utils/image-remote';
+import { ArrowDown } from '@element-plus/icons-vue';
 import {
+    getContainerImageCheckUpdateStatus,
+    runContainerImageCheckUpdate,
+    setContainerImageCheckUpdateSchedule,
+    type ContainerImageCheckUpdateStatus,
     containerItemStats,
     containerListStats,
     containerOperator,
@@ -519,9 +528,10 @@ import { MsgSuccess, MsgWarning } from '@/utils/message';
 import { useGlobalStore } from '@/composables/useGlobalStore';
 import { routerToName, routerToNameWithQuery } from '@/utils/router';
 import router from '@/routers';
-import { computeSize2, computeSizeForDocker, computeCPU } from '@/utils/size';
+import { computeSize2 } from '@/utils/size';
+import ContainerResource from '@/components/container-resource/index.vue';
 import { newUUID } from '@/utils/id';
-import { updateCommonDescription } from '@/api/modules/setting';
+import { updateCommonDescription, getSettingBaseInfo } from '@/api/modules/setting';
 
 const { currentNode, isAdminOrNodeAdmin, isMobile } = useGlobalStore();
 
@@ -729,48 +739,194 @@ const dialogContainerLogRef = ref();
 const dialogRenameRef = ref();
 const dialogPruneRef = ref();
 
-const search = async (column?: any) => {
-    if (!isActive.value || !isExist.value) {
+let requestController: AbortController | undefined;
+
+const cancelRequests = () => {
+    requestController?.abort();
+    requestController = undefined;
+    loading.value = false;
+};
+onBeforeUnmount(cancelRequests);
+onDeactivated(cancelRequests);
+
+const loadContainers = async (background = false, column?: any) => {
+    if (!isActive.value || !isExist.value || (background && requestController)) {
         return;
     }
+    requestController?.abort();
+    const controller = new AbortController();
+    requestController = controller;
+    loading.value = !background;
     localStorage.setItem('includeAppStore', includeAppStore.value ? 'true' : 'false');
-    let filterItem = (router.currentRoute.value.query?.filters as string) || '';
     if (column) {
         paginationConfig.orderBy = column.order ? column.prop : defaultSort.prop;
         paginationConfig.order = column.order || defaultSort.order;
     }
-    let params = {
+    const params = {
         name: searchName.value,
         state: paginationConfig.state || 'all',
         page: paginationConfig.currentPage,
         pageSize: paginationConfig.pageSize,
-        filters: filterItem,
+        filters: props.filters || (router.currentRoute.value.query?.filters as string) || '',
         orderBy: paginationConfig.orderBy,
         order: paginationConfig.order,
         excludeAppStore: !includeAppStore.value,
     };
-    loading.value = true;
-    const [containerResult, statsResult, statusResult] = await Promise.allSettled([
-        searchContainer(params),
-        containerListStats(),
-        loadContainerStatus(),
-    ]);
-    loading.value = false;
-
-    if (containerResult.status === 'fulfilled') {
-        const containers = containerResult.value.data.items || [];
+    const statusRequest = loadContainerStatus(undefined, true, controller.signal)
+        .then((res) => {
+            if (!controller.signal.aborted) {
+                updateTags(res.data || {});
+            }
+        })
+        .catch(() => {}); // Request errors are reported by the HTTP layer.
+    try {
+        const res = await searchContainer(params, undefined, controller.signal);
+        if (controller.signal.aborted) {
+            return;
+        }
+        const containers = res.data.items || [];
         syncContainerRows(containers);
-        paginationConfig.total = containerResult.value.data.total;
-    }
-
-    if (statsResult.status === 'fulfilled') {
-        applyStatsToRows(statsResult.value.data || []);
-    }
-
-    if (statusResult.status === 'fulfilled') {
-        updateTags(statusResult.value.data || {});
+        paginationConfig.total = res.data.total;
+        loading.value = false;
+        // Stopped containers no longer produce samples; discard their previous usage.
+        for (const row of data.value) {
+            if (row.state !== 'running') {
+                for (const field of statFields) {
+                    row[field] = 0;
+                }
+            }
+        }
+        const ids = containers.filter((item) => item.state === 'running').map((item) => item.containerID);
+        if (ids.length > 0) {
+            const stats = await containerListStats(undefined, ids, { signal: controller.signal });
+            if (!controller.signal.aborted) {
+                applyStatsToRows(stats.data || []);
+            }
+        }
+    } catch {
+        // Preserve the last successful rows; the HTTP layer reports the failure.
+    } finally {
+        if (!controller.signal.aborted) {
+            loading.value = false;
+        }
+        await statusRequest;
+        if (requestController === controller) {
+            requestController = undefined;
+        }
     }
 };
+
+const search = (column?: any) => loadContainers(false, column);
+
+const imageCheckUpdateStatus = ref<ContainerImageCheckUpdateStatus>();
+const imageCheckUpdateBusy = ref(false);
+let imageCheckUpdateTimer: ReturnType<typeof setTimeout> | undefined;
+let imageCheckUpdateGeneration = 0;
+let imageCheckUpdateActive = false;
+let imageCheckUpdateController: AbortController | undefined;
+const pauseImageCheckUpdatePolling = () => {
+    imageCheckUpdateGeneration++;
+    clearTimeout(imageCheckUpdateTimer);
+    imageCheckUpdateController?.abort();
+    imageCheckUpdateController = undefined;
+};
+const stopImageCheckUpdatePolling = () => {
+    imageCheckUpdateActive = false;
+    pauseImageCheckUpdatePolling();
+};
+const showImageCheckUpdateResult = (status: ContainerImageCheckUpdateStatus) => {
+    if (status.error) MsgWarning(status.error);
+    else {
+        const summary = i18n.global.t('container.imageCheckUpdateResult', { ...status });
+        if (status.failed) MsgWarning(summary);
+        else MsgSuccess(summary);
+    }
+};
+const refreshImageCheckUpdateStatus = async (generation: number) => {
+    if (!imageCheckUpdateActive || document.hidden || generation !== imageCheckUpdateGeneration) return;
+    const node = currentNode.value;
+    const controller = new AbortController();
+    imageCheckUpdateController = controller;
+    try {
+        const res = await getContainerImageCheckUpdateStatus(node, controller.signal);
+        if (generation !== imageCheckUpdateGeneration || node !== currentNode.value) return;
+        const previous = imageCheckUpdateStatus.value;
+        imageCheckUpdateStatus.value = res.data;
+        if (previous && res.data.finishedAt && previous.finishedAt !== res.data.finishedAt) {
+            await loadContainers();
+            if (generation !== imageCheckUpdateGeneration || node !== currentNode.value) return;
+            showImageCheckUpdateResult(res.data);
+        }
+    } catch {
+        // The HTTP layer displays errors. Retry on the next status poll.
+    } finally {
+        if (imageCheckUpdateController === controller) imageCheckUpdateController = undefined;
+        if (generation === imageCheckUpdateGeneration && imageCheckUpdateActive && !document.hidden) {
+            const interval = imageCheckUpdateStatus.value?.running ? 10000 : 60000;
+            imageCheckUpdateTimer = setTimeout(() => refreshImageCheckUpdateStatus(generation), interval);
+        }
+    }
+};
+const restartImageCheckUpdatePolling = () => {
+    pauseImageCheckUpdatePolling();
+    if (imageCheckUpdateActive && !document.hidden) void refreshImageCheckUpdateStatus(imageCheckUpdateGeneration);
+};
+const startImageCheckUpdatePolling = () => {
+    if (imageCheckUpdateActive) return;
+    imageCheckUpdateActive = true;
+    restartImageCheckUpdatePolling();
+};
+const onImageCheckUpdateCommand = async (command: string) => {
+    const node = currentNode.value;
+    const generation = imageCheckUpdateGeneration;
+    imageCheckUpdateBusy.value = true;
+    try {
+        const status = await getContainerImageCheckUpdateStatus(node);
+        if (generation !== imageCheckUpdateGeneration || node !== currentNode.value) return;
+        imageCheckUpdateStatus.value = status.data;
+        // Disabling an existing schedule must remain possible without a proxy.
+        const proxyStatus =
+            node === 'local' && (command === 'check' || !status.data.enabled) ? await getSettingBaseInfo() : undefined;
+        if (generation !== imageCheckUpdateGeneration || node !== currentNode.value) return;
+        if (proxyStatus && isRuntimeProxyRequired(proxyStatus.data)) {
+            await showImageProxyRequired('container.imageCheckUpdateProxyRequired', () => node === currentNode.value);
+            return;
+        }
+        const res =
+            command === 'check'
+                ? await runContainerImageCheckUpdate(node)
+                : await setContainerImageCheckUpdateSchedule(!imageCheckUpdateStatus.value?.enabled, node);
+        if (generation !== imageCheckUpdateGeneration || node !== currentNode.value) return;
+        imageCheckUpdateStatus.value = res.data;
+        if (command === 'check' && res.data.taskID) openTaskLog(res.data.taskID);
+        if (command === 'check' && !res.data.running) {
+            showImageCheckUpdateResult(res.data);
+            await loadContainers();
+        } else {
+            MsgSuccess(
+                i18n.global.t(
+                    command === 'check' ? 'container.imageCheckUpdateStarted' : 'commons.msg.operationSuccess',
+                ),
+            );
+        }
+        if (generation === imageCheckUpdateGeneration && node === currentNode.value) restartImageCheckUpdatePolling();
+    } catch {
+        // The HTTP layer reports failures; keep the last confirmed schedule state.
+    } finally {
+        if (node === currentNode.value) imageCheckUpdateBusy.value = false;
+    }
+};
+onMounted(startImageCheckUpdatePolling);
+onMounted(() => document.addEventListener('visibilitychange', restartImageCheckUpdatePolling));
+onBeforeUnmount(() => document.removeEventListener('visibilitychange', restartImageCheckUpdatePolling));
+onActivated(startImageCheckUpdatePolling);
+onBeforeUnmount(stopImageCheckUpdatePolling);
+onDeactivated(stopImageCheckUpdatePolling);
+watch(currentNode, () => {
+    imageCheckUpdateStatus.value = undefined;
+    imageCheckUpdateBusy.value = false;
+    restartImageCheckUpdatePolling();
+});
 
 const searchWithStatus = (item: string) => {
     activeTag.value = item;
@@ -800,21 +956,7 @@ const changePinned = (row: any, isPinned: boolean) => {
     });
 };
 
-const refresh = async () => {
-    let filterItem = props.filters ? props.filters : '';
-    let params = {
-        name: searchName.value,
-        state: paginationConfig.state || 'all',
-        page: paginationConfig.currentPage,
-        pageSize: paginationConfig.pageSize,
-        filters: filterItem,
-        orderBy: paginationConfig.orderBy,
-        order: paginationConfig.order,
-    };
-    const [containerResult, statsResult] = await Promise.all([searchContainer(params), containerListStats()]);
-    syncContainerRows(containerResult.data.items || []);
-    applyStatsToRows(statsResult.data || []);
-};
+const refresh = () => loadContainers(true);
 
 const loadSize = async (row: any) => {
     containerItemStats(row.containerID).then((res) => {
@@ -920,6 +1062,10 @@ const checkStatus = (operation: string, row: Container.ContainerInfo | null) => 
 };
 
 const onOperate = async (op: string, row: Container.ContainerInfo | null) => {
+    if (op === 'upgrade') {
+        dialogUpgradeRef.value.acceptParams(selects.value);
+        return;
+    }
     let opList = row ? [row] : selects.value;
     let msg = i18n.global.t('container.operatorHelper', [i18n.global.t('container.' + op)]);
     batchNames.value = [];
@@ -999,8 +1145,15 @@ const buttons = [
     {
         label: i18n.global.t('commons.button.upgrade'),
         permission: true,
+        dot: (row: Container.ContainerInfo) => Boolean(row.hasUpdate),
         click: (row: Container.ContainerInfo) => {
-            dialogUpgradeRef.value!.acceptParams({ container: row.name, image: row.imageName, fromApp: row.isFromApp });
+            dialogUpgradeRef.value!.acceptParams({
+                container: row.name,
+                image: row.imageName,
+                fromApp: row.isFromApp,
+                latestVersion: row.latestVersion,
+                hasUpdate: row.hasUpdate,
+            });
         },
     },
     {
@@ -1117,14 +1270,6 @@ const buttons = [
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-}
-.source-font {
-    font-size: 12px;
-}
-.resource-detail-icon {
-    margin-top: -3px;
-    font-size: 6px;
-    cursor: pointer;
 }
 .tag-button {
     margin-top: -5px;

@@ -5,22 +5,22 @@ import (
 	"strings"
 
 	"github.com/1Panel-dev/1Panel/agent/buserr"
+	"github.com/1Panel-dev/1Panel/agent/utils/ai_tools/vllm"
 	"github.com/1Panel-dev/1Panel/agent/utils/common"
 	"github.com/1Panel-dev/1Panel/agent/utils/xpack"
 )
 
 const (
-	vllmAppKeyForUpgrade  = "vllm"
-	vllmGB10VersionPrefix = "nvidia-gb10-dspark-"
-	vllmImageEnvKey       = "IMAGE"
-	vllmImageTypeNvidia   = "nvidia"
-	vllmImageTypeIntel    = "intel"
-	vllmImageTypeAscend   = "ascend"
+	vllmAppKeyForUpgrade = "vllm"
+	vllmImageEnvKey      = "IMAGE"
+	vllmImageTypeNvidia  = "nvidia"
+	vllmImageTypeIntel   = "intel"
+	vllmImageTypeAscend  = "ascend"
 )
 
 func isVllmProOnlyVersion(appKey, version string) bool {
 	return strings.EqualFold(strings.TrimSpace(appKey), vllmAppKeyForUpgrade) &&
-		strings.HasPrefix(strings.ToLower(strings.TrimSpace(version)), vllmGB10VersionPrefix)
+		vllm.IsGB10Version(version)
 }
 
 func canAccessVllmVersion(appKey, version string) bool {
@@ -68,6 +68,9 @@ func trimVllmVersionFamily(version string) string {
 }
 
 func buildDefaultVllmImageByVersion(version string) string {
+	if image := vllm.GB10Image(version); image != "" {
+		return image
+	}
 	tag := trimVllmVersionFamily(version)
 	family := resolveVllmVersionFamily(version, "")
 	if family == vllmImageTypeIntel {
@@ -83,6 +86,11 @@ func buildDefaultVllmImageByVersion(version string) string {
 }
 
 func isVllmUpgradeVersionAllowed(currentVersion, targetVersion, currentImage string) bool {
+	currentGB10 := vllm.IsGB10Version(currentVersion)
+	targetGB10 := vllm.IsGB10Version(targetVersion)
+	if currentGB10 != targetGB10 {
+		return false
+	}
 	currentFamily := resolveVllmVersionFamily(currentVersion, currentImage)
 	targetFamily := resolveVllmVersionFamily(targetVersion, "")
 	return currentFamily == targetFamily
@@ -102,7 +110,7 @@ func isVllmUpgradeCandidate(currentVersion, targetVersion, currentImage string) 
 	if !isVllmUpgradeVersionAllowed(currentVersion, targetVersion, currentImage) {
 		return false
 	}
-	if common.CompareVersion(targetVersion, currentVersion) {
+	if common.CompareVersion(trimVllmVersionFamily(targetVersion), trimVllmVersionFamily(currentVersion)) {
 		return true
 	}
 	return !hasVllmVersionFamilyPrefix(currentVersion) &&

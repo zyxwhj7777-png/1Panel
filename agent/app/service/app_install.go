@@ -6,15 +6,12 @@ import (
 	"fmt"
 	"maps"
 	"math"
-	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/1Panel-dev/1Panel/agent/app/dto"
 	"github.com/1Panel-dev/1Panel/agent/app/dto/request"
@@ -31,7 +28,6 @@ import (
 	"github.com/1Panel-dev/1Panel/agent/utils/env"
 	"github.com/1Panel-dev/1Panel/agent/utils/files"
 	"github.com/1Panel-dev/1Panel/agent/utils/nginx"
-	"github.com/1Panel-dev/1Panel/agent/utils/req_helper"
 	"github.com/docker/docker/api/types/container"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
@@ -126,7 +122,10 @@ func (a *AppInstallService) Page(req request.AppInstalledSearch) (int64, []respo
 		}
 	}
 
-	installDTOs, _ := handleInstalled(installs, req.Update, req.Sync, req.CheckUpdate)
+	installDTOs, err := handleInstalled(installs, req.Update, req.Sync, req.CheckUpdate)
+	if err != nil {
+		return 0, nil, err
+	}
 	if req.Update {
 		total = int64(len(installDTOs))
 	}
@@ -159,10 +158,19 @@ func (a *AppInstallService) CheckExist(req request.AppInstalledInfo) (*response.
 	}
 
 	res.ContainerName = appInstall.ContainerName
+	res.ModelAccountBaseURLType = appInstall.ModelAccountBaseURLType
+	res.ModelAccountBaseURL = appInstall.ModelAccountBaseURL
+	if app.Key == "ollama" {
+		res.ModelAccountBaseURLType, res.ModelAccountBaseURL, err = loadOllamaModelAccountAddress(appInstall)
+		if err != nil {
+			return nil, err
+		}
+	}
 	res.Name = appInstall.Name
 	res.Version = appInstall.Version
 	res.CreatedAt = appInstall.CreatedAt
 	res.Status = appInstall.Status
+	res.TaskID = appInstall.TaskID
 	res.AppInstallID = appInstall.ID
 	res.IsExist = true
 	res.InstallPath = path.Join(global.Dir.AppInstallDir, appInstall.App.Key, appInstall.Name)
@@ -251,16 +259,40 @@ func (a *AppInstallService) Operate(req request.AppInstalledOperate) error {
 	if err != nil {
 		return err
 	}
+	if install.App.Key == "ollama" || install.App.Key == "vllm" {
+		if req.Operate != constant.Upgrade {
+			if _, loaded := appUpgradeLocks.LoadOrStore(install.ID, struct{}{}); loaded {
+				return buserr.New("TaskIsExecuting")
+			}
+			defer appUpgradeLocks.Delete(install.ID)
+		}
+		operationTask, err := taskRepo.GetExecutingTask(task.TaskScopeApp, install.ID)
+		if err != nil {
+			return err
+		}
+		if operationTask.ID != "" && req.Operate != constant.Sync {
+			return buserr.New("TaskIsExecuting")
+		}
+	}
+	if install.Status == constant.StatusRestarting && (req.Operate == constant.Stop || req.Operate == constant.Delete) && !req.ForceDelete {
+		count, err := taskRepo.CountExecutingTask(repo.WithByType(task.TaskScopeApp), taskRepo.WithResourceID(install.ID), taskRepo.WithOperate(task.TaskRestart))
+		if err != nil {
+			return err
+		}
+		if count > 0 {
+			return buserr.New("TaskIsExecuting")
+		}
+	}
 	if !req.ForceDelete && !files.NewFileOp().Stat(install.GetPath()) {
 		return buserr.New("ErrInstallDirNotFound")
 	}
 	dockerComposePath := install.GetComposePath()
-	if req.UseLifecycleScripts && (req.Operate == constant.Start || req.Operate == constant.Stop || req.Operate == constant.Restart) {
-		return operateAppWithLifecycleScripts(install, req, nil)
+	if (req.UseLifecycleScripts || install.App.Key == "ollama" || install.App.Key == "vllm") && (req.Operate == constant.Start || req.Operate == constant.Stop || req.Operate == constant.Restart) {
+		return operateAppTask(install, req, nil)
 	}
 	switch req.Operate {
 	case constant.Rebuild:
-		return rebuildApp(install)
+		return rebuildApp(install, req.TaskID, nil)
 	case constant.Start:
 		out, err := compose.Up(dockerComposePath)
 		if err != nil {
@@ -289,21 +321,19 @@ func (a *AppInstallService) Operate(req request.AppInstalledOperate) error {
 			TaskID:              req.TaskID,
 			UseLifecycleScripts: req.UseLifecycleScripts,
 		}
-		if err = deleteAppInstall(deleteReq); err != nil && !req.ForceDelete {
-			return err
-		}
-		return nil
+		return deleteAppInstall(deleteReq)
 	case constant.Sync:
 		return syncAppInstallStatus(&install, true)
 	case constant.Upgrade:
 		upgradeReq := request.AppInstallUpgrade{
-			InstallID:     install.ID,
-			DetailID:      req.DetailId,
-			Backup:        req.Backup,
-			PullImage:     req.PullImage,
-			DeleteImage:   req.DeleteImage,
-			DockerCompose: req.DockerCompose,
-			TaskID:        req.TaskID,
+			FeishuTransition: req.FeishuTransition,
+			InstallID:        install.ID,
+			DetailID:         req.DetailId,
+			Backup:           req.Backup,
+			PullImage:        req.PullImage,
+			DeleteImage:      req.DeleteImage,
+			DockerCompose:    req.DockerCompose,
+			TaskID:           req.TaskID,
 		}
 		return upgradeInstall(upgradeReq)
 	case constant.Reload:
@@ -319,15 +349,17 @@ func (a *AppInstallService) Operate(req request.AppInstalledOperate) error {
 	}
 }
 
-func operateAppWithLifecycleScripts(install model.AppInstall, req request.AppInstalledOperate, onFailure func(error)) error {
-	taskType := task.TaskUpdate
+func operateAppTask(install model.AppInstall, req request.AppInstalledOperate, onFailure func(error)) error {
+	var taskType string
 	switch req.Operate {
 	case constant.Start:
+		taskType = "Run"
 		install.Status = constant.StatusStarting
 	case constant.Restart:
 		taskType = task.TaskRestart
 		install.Status = constant.StatusRestarting
 	case constant.Stop:
+		taskType = "Stop"
 		install.Status = constant.StatusWaiting
 	default:
 		return errors.New("lifecycle script operation not supported")
@@ -350,8 +382,32 @@ func operateAppWithLifecycleScripts(install model.AppInstall, req request.AppIns
 	operationTask.AddSubTaskWithOps(
 		task.GetTaskName(install.Name, taskType, task.TaskScopeApp),
 		func(t *task.Task) error {
-			if err := runScript(t, &install, operation); err != nil {
-				return err
+			if req.Operate == constant.Start || req.Operate == constant.Restart {
+				if err := resetLocalModelAccountVerification(install); err != nil {
+					return err
+				}
+			}
+			if req.UseLifecycleScripts {
+				if err := runScript(t, &install, operation); err != nil {
+					return err
+				}
+			} else {
+				var out string
+				var err error
+				switch req.Operate {
+				case constant.Start:
+					out, err = compose.Up(install.GetComposePath())
+				case constant.Stop:
+					out, err = compose.Stop(install.GetComposePath())
+				case constant.Restart:
+					out, err = compose.Restart(install.GetComposePath())
+				}
+				if strings.TrimSpace(out) != "" {
+					t.Log(out)
+				}
+				if err != nil {
+					return err
+				}
 			}
 			if req.Operate == constant.Stop {
 				install.Status = constant.StatusStopped
@@ -372,18 +428,20 @@ func operateAppWithLifecycleScripts(install model.AppInstall, req request.AppIns
 		},
 		nil,
 		0,
-		time.Hour,
+		0,
 	)
 	go func() {
-		if taskErr := operationTask.Execute(); taskErr != nil {
-			if onFailure != nil {
-				onFailure(taskErr)
-				return
-			}
-			install.Status = constant.StatusUpErr
-			install.Message = taskErr.Error()
-			_ = appInstallRepo.Save(context.Background(), &install)
+		taskErr := operationTask.Execute()
+		if taskErr == nil {
+			return
 		}
+		if onFailure != nil {
+			onFailure(taskErr)
+			return
+		}
+		install.Status = constant.StatusUpErr
+		install.Message = taskErr.Error()
+		_ = appInstallRepo.Save(context.Background(), &install)
 	}()
 	return nil
 }
@@ -410,9 +468,26 @@ func (a *AppInstallService) UpdateSort(req request.AppInstallSort) error {
 }
 
 func (a *AppInstallService) Update(req request.AppInstalledUpdate) error {
+	return a.UpdateWithBeforeRestart(req, nil)
+}
+
+func (a *AppInstallService) UpdateWithBeforeRestart(req request.AppInstalledUpdate, beforeRestart func(*model.AppInstall) error) error {
 	installed, err := appInstallRepo.GetFirst(repo.WithByID(req.InstallId))
 	if err != nil {
 		return err
+	}
+	if installed.App.Key == "ollama" || installed.App.Key == "vllm" {
+		if _, loaded := appUpgradeLocks.LoadOrStore(installed.ID, struct{}{}); loaded {
+			return buserr.New("TaskIsExecuting")
+		}
+		defer appUpgradeLocks.Delete(installed.ID)
+		operationTask, err := taskRepo.GetExecutingTask(task.TaskScopeApp, installed.ID)
+		if err != nil {
+			return err
+		}
+		if operationTask.ID != "" {
+			return buserr.New("TaskIsExecuting")
+		}
 	}
 	oldInstalled := installed
 	port, ok := req.Params["PANEL_APP_PORT_HTTP"]
@@ -438,10 +513,37 @@ func (a *AppInstallService) Update(req request.AppInstalledUpdate) error {
 		}
 	}
 
+	modelAccountBaseURL := ""
+	if installed.App.Key == "ollama" {
+		if req.SyncModelAccount != nil {
+			installed.SyncModelAccount = *req.SyncModelAccount
+		}
+		if req.ModelAccountBaseURLType != "" {
+			installed.ModelAccountBaseURLType = req.ModelAccountBaseURLType
+			installed.ModelAccountBaseURL = req.ModelAccountBaseURL
+		} else if installed.SyncModelAccount {
+			installed.ModelAccountBaseURLType, installed.ModelAccountBaseURL, err = loadOllamaModelAccountAddress(oldInstalled)
+			if err != nil {
+				return err
+			}
+		}
+		if installed.SyncModelAccount {
+			containerName := installed.ContainerName
+			if req.Advanced && req.ContainerName != "" {
+				containerName = req.ContainerName
+			}
+			modelAccountBaseURL, err = ResolveLocalModelAccountBaseURL(installed.ModelAccountBaseURLType, installed.ModelAccountBaseURL, containerName, "11434", installed.HttpPort)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	backupDockerCompose := installed.DockerCompose
-	if req.Advanced {
+	updateGPU := installed.App.Key == "ollama" && req.GPU != nil
+	if req.Advanced || updateGPU {
 		composeMap := make(map[string]interface{})
-		if req.EditCompose {
+		if req.Advanced && req.EditCompose {
 			if err = yaml.Unmarshal([]byte(req.DockerCompose), &composeMap); err != nil {
 				return err
 			}
@@ -450,8 +552,25 @@ func (a *AppInstallService) Update(req request.AppInstalledUpdate) error {
 				return err
 			}
 		}
-		if !req.SkipComposeCommonConfig {
-			if err = addDockerComposeCommonParam(composeMap, installed.ServiceName, req.AppContainerConfig, req.Params); err != nil {
+		if req.Advanced && !req.SkipComposeCommonConfig {
+			if err = AddDockerComposeCommonParam(composeMap, installed.ServiceName, req.AppContainerConfig, req.Params, installed.App.Key); err != nil {
+				return err
+			}
+		}
+		if updateGPU {
+			services, _ := composeMap["services"].(map[string]interface{})
+			service, ok := services[installed.ServiceName].(map[string]interface{})
+			if !ok {
+				return buserr.New("ErrFileParse")
+			}
+			gpuParams := map[string]interface{}{}
+			if err := json.Unmarshal([]byte(installed.Env), &gpuParams); err != nil {
+				return err
+			}
+			for key, value := range req.Params {
+				gpuParams[key] = value
+			}
+			if err := ApplyModelGPU(service, req.GPU, gpuParams, "nvidia"); err != nil {
 				return err
 			}
 		}
@@ -460,6 +579,8 @@ func (a *AppInstallService) Update(req request.AppInstalledUpdate) error {
 			return err
 		}
 		installed.DockerCompose = string(composeByte)
+	}
+	if req.Advanced {
 		if req.ContainerName == "" {
 			req.Params[constant.ContainerName] = installed.ContainerName
 		} else {
@@ -487,7 +608,7 @@ func (a *AppInstallService) Update(req request.AppInstalledUpdate) error {
 		return err
 	}
 	backupEnvMaps := maps.Clone(oldEnvMaps)
-	handleMap(req.Params, oldEnvMaps)
+	MergeAppEnvironment(req.Params, oldEnvMaps)
 	paramByte, err := json.Marshal(oldEnvMaps)
 	if err != nil {
 		return err
@@ -506,23 +627,31 @@ func (a *AppInstallService) Update(req request.AppInstalledUpdate) error {
 		failed.Message = operationErr.Error()
 		_ = appInstallRepo.Save(context.Background(), &failed)
 	}
+	if installed.App.Key == "ollama" && installed.SyncModelAccount {
+		if err := syncOllamaModelAccount(installed, modelAccountBaseURL, true, true); err != nil {
+			restoreConfig(err)
+			return err
+		}
+	}
+	if beforeRestart != nil {
+		if err := beforeRestart(&installed); err != nil {
+			restoreConfig(err)
+			return err
+		}
+	}
 	if req.UseLifecycleScripts {
-		err = operateAppWithLifecycleScripts(installed, request.AppInstalledOperate{
+		err = operateAppTask(installed, request.AppInstalledOperate{
 			InstallId:           installed.ID,
 			Operate:             constant.Restart,
 			TaskID:              req.TaskID,
 			UseLifecycleScripts: true,
 		}, restoreConfig)
 	} else {
-		err = rebuildApp(installed)
+		err = rebuildApp(installed, req.TaskID, restoreConfig)
 	}
 	if err != nil {
 		restoreConfig(err)
 		return err
-	}
-	if !req.UseLifecycleScripts {
-		installed.Status = constant.StatusRunning
-		_ = appInstallRepo.Save(context.Background(), &installed)
 	}
 
 	proxyChanged := hasAppInstallProxyPassChanged(&oldInstalled, &installed)
@@ -679,6 +808,7 @@ func (a *AppInstallService) GetUpdateVersions(req request.AppUpdateVersion) ([]d
 	if err != nil {
 		return versions, err
 	}
+	var feishuLegacy, feishuConfigured, feishuChecked bool
 	details, err := appDetailRepo.GetBy(appDetailRepo.WithAppId(app.ID))
 	if err != nil {
 		return versions, err
@@ -703,32 +833,17 @@ func (a *AppInstallService) GetUpdateVersions(req request.AppUpdateVersion) ([]d
 			canUpgrade = isVllmUpgradeCandidate(install.Version, detail.Version, currentImage)
 		}
 		if canUpgrade {
-			var newCompose string
-			if req.UpdateVersion != "" && req.UpdateVersion == detail.Version && detail.DockerCompose == "" && !app.IsLocalApp() {
-				filename := filepath.Base(detail.DownloadUrl)
-				dockerComposeUrl := fmt.Sprintf("%s%s", strings.TrimSuffix(detail.DownloadUrl, filename), "docker-compose.yml")
-				if app.Resource == constant.AppResourceRemote {
-					dockerComposeUrl, err = currentAppDownloadURL(dockerComposeUrl)
-					if err != nil {
-						return versions, err
-					}
+			feishuTarget := app.Key == constant.AppOpenclaw && isOpenclawBundledFeishuVersion(detail.Version)
+			if feishuTarget && !feishuChecked && (req.LoadCompose == nil || *req.LoadCompose) {
+				conf, readErr := readOpenclawConfig(path.Join(install.GetPath(), "data/conf/openclaw.json"))
+				if readErr != nil {
+					return versions, readErr
 				}
-				statusCode, composeRes, err := req_helper.HandleRequest(dockerComposeUrl, http.MethodGet, constant.TimeOut20s)
-				if statusCode == http.StatusNotFound {
-					return versions, buserr.New("ErrAppVersionUnavailable")
-				}
+				feishuLegacy, feishuConfigured, err = classifyLegacyFeishu(conf, install.GetPath())
 				if err != nil {
 					return versions, err
 				}
-				if statusCode > 200 {
-					return versions, err
-				}
-				detail.DockerCompose = string(composeRes)
-				_ = appDetailRepo.Update(context.Background(), detail)
-			}
-			newCompose, err = getUpgradeCompose(install, detail)
-			if err != nil {
-				return versions, err
+				feishuChecked = true
 			}
 			if app.Key == constant.AppMysql {
 				majorVersion := getMajorVersion(install.Version)
@@ -737,15 +852,50 @@ func (a *AppInstallService) GetUpdateVersions(req request.AppUpdateVersion) ([]d
 				}
 			}
 			versions = append(versions, dto.AppVersion{
-				Version:       detail.Version,
-				DetailId:      detail.ID,
-				DockerCompose: newCompose,
+				FeishuLegacy:     feishuTarget && feishuLegacy,
+				FeishuConfigured: feishuTarget && feishuConfigured,
+				Version:          detail.Version,
+				DetailId:         detail.ID,
 			})
 		}
 	}
 	sort.Slice(versions, func(i, j int) bool {
 		return appVersionSortBefore(app.Key, versions[i].Version, versions[j].Version)
 	})
+	if len(versions) == 0 || (req.LoadCompose != nil && !*req.LoadCompose) {
+		return versions, nil
+	}
+	target := 0
+	if req.UpdateVersion != "" {
+		target = -1
+		for i := range versions {
+			if versions[i].Version == req.UpdateVersion {
+				target = i
+				break
+			}
+		}
+		if target == -1 {
+			return versions, buserr.New("ErrAppVersionUnavailable")
+		}
+	}
+	if app.Key == vllmAppKeyForUpgrade {
+		versions[target].DockerCompose = install.DockerCompose
+		return versions, nil
+	}
+	for _, detail := range details {
+		if detail.ID != versions[target].DetailId {
+			continue
+		}
+		if err := ensureAppDetailCompose(app, &detail); err != nil {
+			return versions, err
+		}
+		content, err := getUpgradeCompose(install, detail)
+		if err != nil {
+			return versions, err
+		}
+		versions[target].DockerCompose = content
+		break
+	}
 	return versions, nil
 }
 
@@ -934,6 +1084,28 @@ func (a *AppInstallService) GetParams(id uint) (*response.AppConfig, error) {
 	config := getAppCommonConfig(envs)
 	config.DockerCompose = install.DockerCompose
 	res.Params = params
+	res.AppKey = install.App.Key
+	res.Name = install.Name
+	res.HttpPort = install.HttpPort
+	res.SyncModelAccount = install.SyncModelAccount
+	res.ModelAccountBaseURLType = install.ModelAccountBaseURLType
+	res.ModelAccountBaseURL = install.ModelAccountBaseURL
+	if install.App.Key == "ollama" {
+		var project map[string]interface{}
+		if err := yaml.Unmarshal([]byte(install.DockerCompose), &project); err != nil {
+			return nil, err
+		}
+		services, _ := project["services"].(map[string]interface{})
+		service, ok := services[install.ServiceName].(map[string]interface{})
+		if !ok {
+			return nil, buserr.New("ErrFileParse")
+		}
+		res.GPU = ReadModelGPU(service, envs, "nvidia")
+		res.ModelAccountBaseURLType, res.ModelAccountBaseURL, err = loadOllamaModelAccountAddress(install)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if config.ContainerName == "" {
 		config.ContainerName = install.ContainerName
 	}
@@ -942,40 +1114,86 @@ func (a *AppInstallService) GetParams(id uint) (*response.AppConfig, error) {
 	res.RestartPolicy = getRestartPolicy(install.DockerCompose)
 	res.WebUI = install.WebUI
 	res.Type = install.App.Type
-	if rawCompose, err := getUpgradeCompose(install, detail); err == nil {
-		res.RawCompose = rawCompose
+	rawCompose := install.DockerCompose
+	if install.App.Key != vllmAppKeyForUpgrade {
+		if err := ensureAppDetailCompose(install.App, &detail); err != nil {
+			var businessErr buserr.BusinessError
+			if !errors.As(err, &businessErr) || businessErr.Msg != "ErrAppVersionUnavailable" {
+				return nil, err
+			}
+			if err := validateAppDetailCompose([]byte(install.DockerCompose)); err != nil {
+				return nil, err
+			}
+			// A removed template cannot prove the instance is unmodified.
+			res.RawCompose = install.DockerCompose
+			res.IsEdit = true
+			return &res, nil
+		}
+		rawCompose, err = getUpgradeCompose(install, detail)
+		if err != nil {
+			return nil, err
+		}
 	}
+	equal, err := composeEqualExceptImage(rawCompose, install.DockerCompose)
+	if err != nil {
+		return nil, err
+	}
+	res.RawCompose = rawCompose
+	res.IsEdit = !equal
 	return &res, nil
 }
 
 func syncAppInstallStatus(appInstall *model.AppInstall, force bool) error {
-	operation := ""
-	switch appInstall.Status {
-	case constant.StatusInstalling:
-		operation = task.TaskInstall
-	case constant.StatusUpgrading:
-		operation = task.TaskUpgrade
-	case constant.StatusRebuilding:
-		operation = task.TaskBuild
-	case constant.StatusUninstalling:
-		operation = task.TaskUninstall
-	case constant.StatusStarting, constant.StatusWaiting:
-		operation = task.TaskUpdate
-	case constant.StatusRestarting:
-		operation = task.TaskRestart
-	}
-	if operation != "" {
-		if err := reconcileAppInstallTaskFailure(appInstall, operation, global.DB, global.TaskDB); err != nil {
+	if appInstall.App.Key == "ollama" || appInstall.App.Key == "vllm" {
+		operationTask, err := taskRepo.GetExecutingTask(task.TaskScopeApp, appInstall.ID)
+		if err != nil {
 			return err
 		}
-	}
-	switch appInstall.Status {
-	case constant.StatusInstalling, constant.StatusRebuilding, constant.StatusUpgrading, constant.StatusUninstalling,
-		constant.StatusStarting, constant.StatusRestarting, constant.StatusWaiting:
-		return nil
-	case constant.StatusInstallErr, constant.StatusUpgradeErr, constant.StatusUpErr:
-		if !force {
+		appInstall.TaskID = operationTask.ID
+		if operationTask.ID != "" {
+			appInstall.Status = localEngineTaskStatus(operationTask.Operate, appInstall.Status)
 			return nil
+		}
+		force = true
+	} else {
+		operation := ""
+		switch appInstall.Status {
+		case constant.StatusInstalling:
+			operation = task.TaskInstall
+		case constant.StatusUpgrading:
+			operation = task.TaskUpgrade
+		case constant.StatusRebuilding:
+			operation = task.TaskBuild
+		case constant.StatusUninstalling:
+			operation = task.TaskUninstall
+		case constant.StatusStarting:
+			operation = "Run"
+		case constant.StatusWaiting:
+			operation = "Stop"
+		case constant.StatusRestarting:
+			operation = task.TaskRestart
+		}
+		if operation != "" {
+			if err := reconcileAppInstallTaskFailure(appInstall, operation, global.DB, global.TaskDB); err != nil {
+				return err
+			}
+		}
+		switch appInstall.Status {
+		case constant.StatusInstalling, constant.StatusRebuilding, constant.StatusUpgrading, constant.StatusUninstalling,
+			constant.StatusStarting, constant.StatusWaiting:
+			return nil
+		case constant.StatusRestarting:
+			count, err := taskRepo.CountExecutingTask(repo.WithByType(task.TaskScopeApp), taskRepo.WithResourceID(appInstall.ID), taskRepo.WithOperate(task.TaskRestart))
+			if err != nil {
+				return err
+			}
+			if count > 0 {
+				return nil
+			}
+		case constant.StatusInstallErr, constant.StatusUpgradeErr, constant.StatusUpErr:
+			if !force {
+				return nil
+			}
 		}
 	}
 	cli, err := docker.NewClient()
@@ -989,7 +1207,11 @@ func syncAppInstallStatus(appInstall *model.AppInstall, force bool) error {
 		containersMap  map[string]container.Summary
 		containerNames = strings.Split(appInstall.ContainerName, ",")
 	)
-	containers, err = cli.ListContainersByName(containerNames)
+	if appInstall.App.Key == "vllm" {
+		containers, err = cli.ListAllContainers()
+	} else {
+		containers, err = cli.ListContainersByName(containerNames)
+	}
 	if err != nil {
 		return err
 	}

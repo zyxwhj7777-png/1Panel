@@ -1376,6 +1376,104 @@ var RemoveUpageHideMenu = &gormigrate.Migration{
 	Migrate: reconcileHideMenuSetting,
 }
 
+var UpdateAiMenuOrder = &gormigrate.Migration{
+	ID: "20261023-update-ai-menu-order",
+	Migrate: func(tx *gorm.DB) error {
+		return helper.UpdateChildMenuSortByLabel(tx, "AI-Menu", []dto.MenuLabelSort{
+			{Label: "AIModel", Sort: 50},
+			{Label: "AIProxyManagement", Sort: 75},
+			{Label: "Agents", Sort: 100},
+			{Label: "MCPServer", Sort: 200},
+			{Label: "SkillsHub", Sort: 225},
+			{Label: "AIBenchmark", Sort: 250},
+			{Label: "GPU", Sort: 300},
+		})
+	},
+}
+
+var UpdateAiMenuOrderV2 = &gormigrate.Migration{
+	ID: "20261026-update-ai-menu-order-v2",
+	Migrate: func(tx *gorm.DB) error {
+		return helper.UpdateChildMenuSortByLabel(tx, "AI-Menu", []dto.MenuLabelSort{
+			{Label: "AIModel", Sort: 50},
+			{Label: "Agents", Sort: 100},
+			{Label: "AIProxyManagement", Sort: 150},
+			{Label: "SkillsHub", Sort: 175},
+			{Label: "MCPServer", Sort: 200},
+			{Label: "GPU", Sort: 300},
+			{Label: "AIBenchmark", Sort: 350},
+		})
+	},
+}
+
+var UpdateAiModelManagementMenus = &gormigrate.Migration{
+	ID: "20261103-update-ai-model-management-menus",
+	Migrate: func(tx *gorm.DB) error {
+		return helper.UpdateHideMenu(tx, func(menus []dto.ShowMenu) []dto.ShowMenu {
+			for i := range menus {
+				if menus[i].Label != "AI-Menu" {
+					continue
+				}
+				menus[i].Path = "/ai/model/files"
+				children := menus[i].Children
+				showOllama := true
+				hasOllama := false
+				insertIndex := 0
+				for j := range children {
+					switch children[j].Label {
+					case "AIModel":
+						children[j].Title = "aiTools.model.vllmManagement"
+						children[j].Path = "/ai/model/files"
+						showOllama = children[j].IsShow
+						insertIndex = j
+					case "OllamaModels":
+						hasOllama = true
+					}
+				}
+				if !hasOllama {
+					children = append(children, dto.ShowMenu{})
+					copy(children[insertIndex+1:], children[insertIndex:])
+					children[insertIndex] = dto.ShowMenu{
+						ID: "48", Title: "aiTools.model.ollamaManagement", IsShow: showOllama,
+						Label: "OllamaModels", Path: "/ai/model/local/ollama", Sort: 25,
+					}
+				}
+				menus[i].Children = children
+				break
+			}
+			return menus
+		})
+	},
+}
+
+var AddModelServicesMenu = &gormigrate.Migration{
+	ID: "20261104-add-model-services-menu",
+	Migrate: func(tx *gorm.DB) error {
+		return helper.UpdateHideMenu(tx, func(menus []dto.ShowMenu) []dto.ShowMenu {
+			for i := range menus {
+				if menus[i].Label != "AI-Menu" {
+					continue
+				}
+				isShow := true
+				for _, child := range menus[i].Children {
+					if child.Label == "ModelServices" {
+						return menus
+					}
+					if child.Label == "AIModel" {
+						isShow = child.IsShow
+					}
+				}
+				menus[i].Children = helper.UpsertMenuByLabel(menus[i].Children, dto.ShowMenu{
+					ID: "49", Title: "aiTools.model.services", IsShow: isShow,
+					Label: "ModelServices", Path: "/ai/model/account", Sort: 75,
+				}, "AIModel")
+				break
+			}
+			return menus
+		})
+	},
+}
+
 var UpdateFirewallMenuPath = &gormigrate.Migration{
 	ID: "20260819-update-firewall-menu-path",
 	Migrate: func(tx *gorm.DB) error {
@@ -1387,6 +1485,50 @@ var UpdateFirewallMenuPath = &gormigrate.Migration{
 						menu.Path = "/hosts/firewall/rules"
 					}
 				}
+			}
+			return menus
+		})
+	},
+}
+
+var UpdateAiMenus = &gormigrate.Migration{
+	ID: "20261105-update-ai-menus",
+	Migrate: func(tx *gorm.DB) error {
+		return helper.UpdateHideMenu(tx, func(menus []dto.ShowMenu) []dto.ShowMenu {
+			sorts := map[string]int{
+				"GPU":               10,
+				"OllamaModels":      25,
+				"AIModel":           50,
+				"ModelServices":     75,
+				"AIBenchmark":       100,
+				"AIProxyManagement": 125,
+				"Agents":            150,
+				"SkillsHub":         175,
+				"MCPServer":         200,
+			}
+			paths := map[string]string{
+				"/ai/model":              "/ai/vllm",
+				"/ai/model/files":        "/ai/vllm/models",
+				"/ai/model/local":        "/ai/vllm/deployments",
+				"/ai/model/local/ollama": "/ai/ollama",
+				"/ai/model/account":      "/ai/model-services",
+			}
+			for i := range menus {
+				if menus[i].Label != "AI-Menu" {
+					continue
+				}
+				if path, ok := paths[menus[i].Path]; ok {
+					menus[i].Path = path
+				}
+				for j := range menus[i].Children {
+					if sort, ok := sorts[menus[i].Children[j].Label]; ok {
+						menus[i].Children[j].Sort = sort
+					}
+					if path, ok := paths[menus[i].Children[j].Path]; ok {
+						menus[i].Children[j].Path = path
+					}
+				}
+				break
 			}
 			return menus
 		})

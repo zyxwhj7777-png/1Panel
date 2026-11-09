@@ -258,7 +258,9 @@ onMounted(async () => {
                 key: installKey.value,
             },
         };
-        installRef.value.acceptParams(params);
+        if (installKey.value !== 'vllm' || !jumpToInstall('', installKey.value)) {
+            installRef.value.acceptParams(params);
+        }
     }
     search(req);
     if (isProductPro.value) {

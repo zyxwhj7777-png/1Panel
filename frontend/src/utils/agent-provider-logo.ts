@@ -1,3 +1,5 @@
+import menuLogo from '../assets/images/1panel-menu-logo.svg?raw';
+
 export interface AgentProviderLogo {
     src?: string;
     mark: string;
@@ -28,6 +30,14 @@ const volcengineLogo: AgentProviderLogo = {
 };
 
 const providerLogos: Record<string, AgentProviderLogo> = {
+    nvidia: {
+        src: asset('nvidia.ico'),
+        mark: 'NV',
+        background: '#ffffff',
+        color: '#76b900',
+        borderColor: '#dcdfe6',
+        source: 'https://www.nvidia.com/favicon.ico',
+    },
     ollama: {
         src: asset('ollama.webp'),
         mark: 'OL',
@@ -43,6 +53,12 @@ const providerLogos: Record<string, AgentProviderLogo> = {
         color: '#4338ca',
         borderColor: '#dcdfe6',
         source: 'https://vllm.ai/vLLM-Logo.svg',
+    },
+    '1panel-ai-gateway': {
+        src: `data:image/svg+xml,${encodeURIComponent(menuLogo.replace('currentColor', '#005eeb'))}`,
+        mark: '1P',
+        background: '#ffffff',
+        color: '#005eeb',
     },
     deepseek: {
         src: asset('deepseek.png'),

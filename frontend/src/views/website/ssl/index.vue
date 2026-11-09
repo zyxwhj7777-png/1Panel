@@ -23,7 +23,7 @@
                 </el-button>
             </template>
             <template #rightToolBar>
-                <TableSearch @search="search()" v-model:searchName="req.domain" />
+                <TableSearch @search="searchByDomain" v-model:searchName="req.domain" />
                 <TableRefresh @search="search()" />
                 <fu-table-column-select
                     :columns="columns"
@@ -36,6 +36,7 @@
             <template #main>
                 <ComplexTable
                     :data="data"
+                    :cache-pagination="false"
                     :pagination-config="paginationConfig"
                     @search="search()"
                     v-model:selects="selects"
@@ -58,7 +59,7 @@
                             <el-tooltip
                                 v-if="row.dnsAccount && row.dnsAccount.type === 'DnsPod'"
                                 :content="$t('ssl.dnsPodRemovedSSLTip')"
-                                placement="top"
+                                v-bind="TABLE_TOOLTIP_OPTIONS"
                             >
                                 <el-tag type="danger" size="small" class="ml-2">
                                     DnsPod {{ $t('ssl.dnsPodRemoved') }}
@@ -172,15 +173,12 @@
                     />
                 </ComplexTable>
             </template>
-            <DnsAccount ref="dnsAccountRef" />
-            <AcmeAccount ref="acmeAccountRef" />
             <Create ref="sslCreateRef" @close="search()" @submit="openLog" />
             <Detail ref="detailRef" />
             <SSLUpload ref="sslUploadRef" @close="search()" />
             <Apply ref="applyRef" @search="search" @submit="openLog" />
             <OpDialog ref="opRef" @search="search" @cancel="search" />
             <Log ref="logRef" @close="search()" :heightDiff="220" />
-            <CA ref="caRef" @close="search()" />
             <Obtain ref="obtainRef" @close="search()" @submit="openLog" />
             <DrawerPro v-model="pushOpen" :header="$t('commons.button.sync')" size="large" @close="handlePushClose">
                 <el-form
@@ -221,12 +219,11 @@
 </template>
 
 <script lang="ts" setup>
+import { TABLE_TOOLTIP_OPTIONS } from '@/components/table/shared';
 import { useSearchState } from '@/utils/search-reset';
 import { toRef, defineAsyncComponent, onMounted, reactive, ref } from 'vue';
 import { deleteSSL, downloadFile, pushSSLToNode, searchSSL, updateSSL } from '@/api/modules/website';
-import DnsAccount from './dns-account/index.vue';
-import AcmeAccount from './acme-account/index.vue';
-import CA from './ca/index.vue';
+import { routerToNameWithQuery } from '@/utils/router';
 import Create from './create/index.vue';
 import Detail from './detail/index.vue';
 import { dateFormat } from '@/utils/date';
@@ -263,8 +260,6 @@ const paginationConfig = reactive({
     pageSize: 20,
     total: 0,
 });
-const acmeAccountRef = ref();
-const dnsAccountRef = ref();
 const sslCreateRef = ref();
 const detailRef = ref();
 const data = ref();
@@ -274,7 +269,6 @@ const sslUploadRef = ref();
 const applyRef = ref();
 const logRef = ref();
 const taskLogRef = ref();
-const caRef = ref();
 const obtainRef = ref();
 const pushFormRef = ref<FormInstance>();
 const pushOpen = ref(false);
@@ -442,6 +436,11 @@ const search = () => {
         });
 };
 
+const searchByDomain = () => {
+    paginationConfig.currentPage = 1;
+    search();
+};
+
 const updateDesc = (row: Website.SSLDTO, bulr: Function) => {
     bulr();
     if (row.description && row.description.length > 128) {
@@ -464,10 +463,10 @@ const updateConfig = (row: Website.SSLDTO) => {
 };
 
 const openAcmeAccount = () => {
-    acmeAccountRef.value.acceptParams();
+    routerToNameWithQuery('SSL-ACME', { uncached: 'true' });
 };
 const openDnsAccount = () => {
-    dnsAccountRef.value.acceptParams();
+    routerToNameWithQuery('SSL-DNS', { uncached: 'true' });
 };
 const openSSL = () => {
     sslCreateRef.value.acceptParams('create');
@@ -542,7 +541,7 @@ const submitPush = async () => {
 };
 
 const openCA = () => {
-    caRef.value.acceptParams();
+    routerToNameWithQuery('SSL-CA', { uncached: 'true' });
 };
 
 const applySSL = (row: Website.SSLDTO) => {
