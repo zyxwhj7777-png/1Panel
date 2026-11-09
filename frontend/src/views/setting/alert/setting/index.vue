@@ -49,9 +49,6 @@
                     <template #title>
                         <div class="flex items-center justify-start">
                             {{ $t('xpack.alert.alertConfigHelper') }}
-                            <span v-if="!isProductPro && !isEE">
-                                {{ $t('commons.units.semicolon') }}{{ $t('xpack.alert.alertConfigProHelper') }}
-                            </span>
                             <el-link
                                 class="ml-1 text-xs"
                                 type="primary"
@@ -468,7 +465,7 @@ const onStatusChange = async (row: Alert.AlertConfigInfo) => {
 };
 
 const isStatusChangeDisabled = (row: Alert.AlertConfigInfo): boolean => {
-    return !isProductPro.value && ['weCom', 'dingTalk', 'feiShu', 'sms'].includes(row.type);
+    return !isProductPro.value && ['sms'].includes(row.type);
 };
 
 const onDelete = (id: number) => {
@@ -514,7 +511,7 @@ const buttons = computed(() => [
         },
         disabled: (row: Alert.AlertConfigInfo) =>
             !row.updatedAt ||
-            ((isIntl.value || !isProductPro.value) && ['weCom', 'dingTalk', 'feiShu', 'sms'].includes(row.type)),
+            ((isIntl.value || !isProductPro.value) && ['sms'].includes(row.type)),
     },
     {
         label: i18n.global.t('commons.button.delete'),

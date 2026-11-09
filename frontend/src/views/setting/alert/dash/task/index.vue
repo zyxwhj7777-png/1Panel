@@ -443,7 +443,7 @@ const configOptions = computed(() => {
             type: c.type,
             disabled:
                 c.status !== 'Enable' ||
-                ((isIntl.value || !isProductPro.value) && ['weCom', 'dingTalk', 'feiShu', 'sms'].includes(c.type)),
+                ((isIntl.value || !isProductPro.value) && ['sms'].includes(c.type)),
         }))
         .sort((a, b) => Number(a.disabled) - Number(b.disabled));
 });

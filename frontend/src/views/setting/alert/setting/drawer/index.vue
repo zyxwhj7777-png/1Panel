@@ -213,11 +213,9 @@ const currentRules = computed(() => {
 
 const typeOptions = computed(() => {
     const options: { value: string; label: string }[] = [{ value: 'email', label: i18n.global.t('xpack.alert.mail') }];
-    if (isProductPro.value && !isIntl.value) {
-        options.push({ value: 'weCom', label: i18n.global.t('xpack.alert.weCom') });
-        options.push({ value: 'dingTalk', label: i18n.global.t('xpack.alert.dingTalk') });
-        options.push({ value: 'feiShu', label: i18n.global.t('xpack.alert.feiShu') });
-    }
+    options.push({ value: 'weCom', label: i18n.global.t('xpack.alert.weCom') });
+    options.push({ value: 'dingTalk', label: i18n.global.t('xpack.alert.dingTalk') });
+    options.push({ value: 'feiShu', label: i18n.global.t('xpack.alert.feiShu') });
     options.push({ value: 'bark', label: i18n.global.t('xpack.alert.bark') });
     options.push({ value: 'custom', label: i18n.global.t('xpack.alert.custom') });
     if (isProductPro.value && !isEE.value && !isIntl.value) {

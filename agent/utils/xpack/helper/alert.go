@@ -36,15 +36,21 @@ func (a *alertHelper) CreateSMSAlertLog(alertType string, info dto.AlertDTO, cre
 }
 
 func (a *alertHelper) CreateTaskScanWebhookAlertLog(alert dto.AlertDTO, alertType string, create dto.AlertLogCreate, pushAlert dto.PushAlert, config model.AlertConfig, transport *http.Transport, agentInfo *dto.AgentInfo) error {
-	if config.Type == constant.Custom {
+	switch config.Type {
+	case constant.Custom:
 		return alertUtil.CreateTaskScanCustomWebhookAlertLog(alert, alertType, create, pushAlert, config, transport, agentInfo)
+	case constant.WeCom, constant.DingTalk, constant.FeiShu:
+		return alertUtil.CreateTaskScanLegacyWebhookAlertLog(alert, alertType, create, pushAlert, config, transport, agentInfo)
 	}
 	return nil
 }
 
 func (a *alertHelper) CreateWebhookAlertLog(alertType string, info dto.AlertDTO, create dto.AlertLogCreate, project string, params []dto.Param, config model.AlertConfig, transport *http.Transport, agentInfo *dto.AgentInfo) error {
-	if config.Type == constant.Custom {
+	switch config.Type {
+	case constant.Custom:
 		return alertUtil.CreateCustomWebhookAlertLog(alertType, info, create, project, params, config, transport, agentInfo)
+	case constant.WeCom, constant.DingTalk, constant.FeiShu:
+		return alertUtil.CreateLegacyWebhookAlertLog(alertType, info, create, project, params, config, transport, agentInfo)
 	}
 	return nil
 }

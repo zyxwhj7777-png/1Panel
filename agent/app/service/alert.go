@@ -26,11 +26,10 @@ import (
 type AlertService struct{}
 
 var eeHiddenAlertTypes = []string{"licenseException", "panelUpdate", "panelPwdEndTime"}
+// Only SMS stays restricted: its sender lives in the commercial alert provider,
+// while WeCom/DingTalk/FeiShu are fully implemented in utils/webhook_sender.
 var communityAlertMethodTypeNames = map[string]string{
-	constant.WeCom:    "WeCom",
-	constant.DingTalk: "DingTalk",
-	constant.FeiShu:   "FeiShu",
-	constant.SMS:      "SMS",
+	constant.SMS: "SMS",
 }
 
 var legacyAlertMethodTypeMap = map[string]string{

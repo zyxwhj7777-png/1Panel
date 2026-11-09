@@ -6,6 +6,7 @@
 *.dylib
 build/1panel-agent
 build/1panel-core
+FORK_NOTES.md
 
 # Mac
 .DS_Store
